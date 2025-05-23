@@ -101,13 +101,21 @@ class AssistantUI(forms.WPFWindow):
         """Execute generated code in Revit"""
         code = self.responseTextBox.Text
         
-        # Extract code block if it's within markdown code fences
-        if "```python" in code and "```" in code.split("```python", 1)[1]:
-            code_block = code.split("```python", 1)[1].split("```", 1)[0].strip()
-        elif "```" in code and "```" in code.split("```", 1)[1]:
-            code_block = code.split("```", 1)[1].split("```", 1)[0].strip()
-        else:
-            code_block = code
+        if not code or code.strip() == "":
+            forms.alert("No code to execute!", title="Empty Code")
+            return
+            
+        # Improved code extraction logic
+        code_block = self.extract_code_from_response(code)
+        
+        if not code_block:
+            forms.alert("No executable Python code found in the response.", title="No Code Found")
+            return
+            
+        # Show the code that will be executed for confirmation
+        if not forms.alert("Execute this code?\n\n{}".format(code_block[:500] + "..." if len(code_block) > 500 else code_block), 
+                          title="Confirm Code Execution", ok=True, cancel=True):
+            return
         
         # Execute the code in Revit
         try:
@@ -139,6 +147,52 @@ class AssistantUI(forms.WPFWindow):
             forms.alert("Script executed successfully!", title="Success")
         except Exception as ex:
             forms.alert("Error executing script:\n{}".format(str(ex)), title="Error Executing Script")
+    
+    def extract_code_from_response(self, response):
+        """Extract Python code from AI response"""
+        import re
+        
+        # Try to find code blocks in various formats
+        
+        # Method 1: Look for ```python code blocks
+        python_pattern = r'```python\s*\n([\s\S]*?)\n```'
+        matches = re.findall(python_pattern, response, re.MULTILINE)
+        if matches:
+            return '\n'.join(matches).strip()
+        
+        # Method 2: Look for generic ``` code blocks
+        generic_pattern = r'```\s*\n([\s\S]*?)\n```'
+        matches = re.findall(generic_pattern, response, re.MULTILINE)
+        if matches:
+            # Filter for Python-like code
+            for match in matches:
+                if any(keyword in match for keyword in ['import', 'def ', 'class ', 'from ', 'clr.', 'Transaction']):
+                    return match.strip()
+        
+        # Method 3: Look for lines that start with import or other Python keywords
+        lines = response.split('\n')
+        code_lines = []
+        in_code = False
+        
+        for line in lines:
+            stripped = line.strip()
+            if any(stripped.startswith(keyword) for keyword in ['import ', 'from ', 'clr.', 'def ', 'class ', 'with Transaction']):
+                in_code = True
+                code_lines.append(line)
+            elif in_code and (stripped == '' or line.startswith('    ') or line.startswith('\t')):
+                code_lines.append(line)
+            elif in_code and not stripped.startswith('#') and stripped != '':
+                # Might be end of code block
+                if any(char in stripped for char in ['.', '(', ')', '=']):
+                    code_lines.append(line)
+                else:
+                    break
+        
+        if code_lines:
+            return '\n'.join(code_lines).strip()
+        
+        # Method 4: If no code blocks found, return empty
+        return ''
 
 # Run the UI
 if __name__ == "__main__":
