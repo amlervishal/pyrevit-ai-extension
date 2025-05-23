@@ -1,0 +1,19 @@
+# UIApplication
+
+The UIApplication class represents the Revit application and provides access to the user interface.
+
+## Properties
+- `Application`: Gets the Application object.
+- `ActiveUIDocument`: Gets the active UI document.
+
+## Methods
+- `OpenAndActivateDocument(String)`: Opens and activates a document.
+- `GetRibbonPanels(String)`: Gets the ribbon panels in a tab.
+- `CreateRibbonTab(String)`: Creates a new ribbon tab.
+- `CreateRibbonPanel(String)`: Creates a new ribbon panel.
+- `LoadAddIn(String)`: Loads an add-in from a file.
+
+
+## Source
+
+Manually created documentation for Revit API.

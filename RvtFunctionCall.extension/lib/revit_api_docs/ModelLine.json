@@ -1,0 +1,29 @@
+{
+  "name": "ModelLine",
+  "description": "The ModelLine class represents a model line in Revit.",
+  "properties": [
+    {
+      "name": "GeometryCurve",
+      "description": "Gets the geometry curve of the model line."
+    },
+    {
+      "name": "LineStyle",
+      "description": "Gets or sets the line style."
+    }
+  ],
+  "methods": [
+    {
+      "name": "Create(Document, Curve, SketchPlane)",
+      "description": "Creates a new model line."
+    },
+    {
+      "name": "GetLineStyle()",
+      "description": "Gets the line style of the model line."
+    },
+    {
+      "name": "SetLineStyle(ElementId)",
+      "description": "Sets the line style of the model line."
+    }
+  ],
+  "url": "Manual documentation"
+}

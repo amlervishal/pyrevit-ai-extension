@@ -1,0 +1,37 @@
+{
+  "name": "UIApplication",
+  "description": "The UIApplication class represents the Revit application and provides access to the user interface.",
+  "properties": [
+    {
+      "name": "Application",
+      "description": "Gets the Application object."
+    },
+    {
+      "name": "ActiveUIDocument",
+      "description": "Gets the active UI document."
+    }
+  ],
+  "methods": [
+    {
+      "name": "OpenAndActivateDocument(String)",
+      "description": "Opens and activates a document."
+    },
+    {
+      "name": "GetRibbonPanels(String)",
+      "description": "Gets the ribbon panels in a tab."
+    },
+    {
+      "name": "CreateRibbonTab(String)",
+      "description": "Creates a new ribbon tab."
+    },
+    {
+      "name": "CreateRibbonPanel(String)",
+      "description": "Creates a new ribbon panel."
+    },
+    {
+      "name": "LoadAddIn(String)",
+      "description": "Loads an add-in from a file."
+    }
+  ],
+  "url": "Manual documentation"
+}

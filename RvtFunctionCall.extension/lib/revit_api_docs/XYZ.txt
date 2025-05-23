@@ -1,0 +1,23 @@
+# XYZ
+
+The XYZ class represents a point or vector in 3D space.
+
+## Properties
+- `X`: Gets the X-coordinate.
+- `Y`: Gets the Y-coordinate.
+- `Z`: Gets the Z-coordinate.
+- `IsZeroLength()`: Gets whether the vector is of zero length.
+- `IsUnitLength()`: Gets whether the vector is of unit length.
+
+## Methods
+- `Add(XYZ)`: Adds two vectors.
+- `Subtract(XYZ)`: Subtracts a vector from this vector.
+- `CrossProduct(XYZ)`: Computes the cross product with another vector.
+- `DotProduct(XYZ)`: Computes the dot product with another vector.
+- `Normalize()`: Normalizes the vector to unit length.
+- `DistanceTo(XYZ)`: Computes the distance to another point.
+
+
+## Source
+
+Manually created documentation for Revit API.

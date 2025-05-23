@@ -1,0 +1,19 @@
+# Floor
+
+The Floor class represents a floor in a Revit project.
+
+## Properties
+- `FloorType`: Gets or sets the floor type.
+- `Level`: Gets the level of the floor.
+- `Thickness`: Gets the thickness of the floor.
+- `Area`: Gets the area of the floor.
+
+## Methods
+- `Create(Document, CurveArray, ElementId, ElementId)`: Creates a new floor.
+- `GetBoundary()`: Gets the boundary of the floor.
+- `GetCompoundStructure()`: Gets the compound structure of the floor.
+
+
+## Source
+
+Manually created documentation for Revit API.

@@ -1,0 +1,23 @@
+# Wall
+
+The Wall class represents a wall in a Revit project.
+
+## Properties
+- `Location`: Gets the location of the wall.
+- `Width`: Gets the width of the wall.
+- `WallType`: Gets or sets the wall type.
+- `Orientation`: Gets the orientation of the wall.
+- `Flipped`: Gets or sets whether the wall is flipped.
+- `Length`: Gets the length of the wall.
+- `Height`: Gets the height of the wall.
+
+## Methods
+- `Create(Document, Curve, ElementId, ElementId, Double, Double, Boolean, Boolean)`: Creates a new wall.
+- `Flip()`: Flips the wall.
+- `GetWallLayers()`: Gets the layers of the wall.
+- `SetCompoundStructure(CompoundStructure)`: Sets the compound structure of the wall.
+
+
+## Source
+
+Manually created documentation for Revit API.

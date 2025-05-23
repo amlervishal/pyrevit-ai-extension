@@ -1,0 +1,69 @@
+{
+  "name": "Parameter",
+  "description": "The Parameter class represents a parameter of a Revit element. It provides access to the parameter's value and properties.",
+  "properties": [
+    {
+      "name": "Definition",
+      "description": "Gets the parameter definition."
+    },
+    {
+      "name": "Element",
+      "description": "Gets the element that owns the parameter."
+    },
+    {
+      "name": "Id",
+      "description": "Gets the parameter's ID."
+    },
+    {
+      "name": "IsReadOnly",
+      "description": "Indicates whether the parameter is read-only."
+    },
+    {
+      "name": "IsShared",
+      "description": "Indicates whether the parameter is a shared parameter."
+    },
+    {
+      "name": "StorageType",
+      "description": "Gets the storage type of the parameter."
+    }
+  ],
+  "methods": [
+    {
+      "name": "AsDouble()",
+      "description": "Gets the parameter value as a double."
+    },
+    {
+      "name": "AsInteger()",
+      "description": "Gets the parameter value as an integer."
+    },
+    {
+      "name": "AsString()",
+      "description": "Gets the parameter value as a string."
+    },
+    {
+      "name": "AsElementId()",
+      "description": "Gets the parameter value as an ElementId."
+    },
+    {
+      "name": "Set(Double)",
+      "description": "Sets the parameter value as a double."
+    },
+    {
+      "name": "Set(Integer)",
+      "description": "Sets the parameter value as an integer."
+    },
+    {
+      "name": "Set(String)",
+      "description": "Sets the parameter value as a string."
+    },
+    {
+      "name": "Set(ElementId)",
+      "description": "Sets the parameter value as an ElementId."
+    },
+    {
+      "name": "Clear()",
+      "description": "Clears the parameter value."
+    }
+  ],
+  "url": "Manual documentation"
+}

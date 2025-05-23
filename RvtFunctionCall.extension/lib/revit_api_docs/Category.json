@@ -1,0 +1,53 @@
+{
+  "name": "Category",
+  "description": "The Category class represents a category in Revit, which is a group of similar elements.",
+  "properties": [
+    {
+      "name": "Id",
+      "description": "Gets the ElementId of the category."
+    },
+    {
+      "name": "Name",
+      "description": "Gets the name of the category."
+    },
+    {
+      "name": "Parent",
+      "description": "Gets the parent category."
+    },
+    {
+      "name": "AllowsBoundParameters",
+      "description": "Indicates whether the category allows bound parameters."
+    },
+    {
+      "name": "CategoryType",
+      "description": "Gets the type of the category."
+    },
+    {
+      "name": "Material",
+      "description": "Gets or sets the default material for the category."
+    }
+  ],
+  "methods": [
+    {
+      "name": "GetBuiltInCategory()",
+      "description": "Gets the built-in category corresponding to this category."
+    },
+    {
+      "name": "IsTagCategory()",
+      "description": "Determines whether this is a tag category."
+    },
+    {
+      "name": "IsSubcategory()",
+      "description": "Determines whether this is a subcategory."
+    },
+    {
+      "name": "GetCategoryType()",
+      "description": "Gets the category type."
+    },
+    {
+      "name": "GetBuiltInParameter(BuiltInParameter)",
+      "description": "Gets a built-in parameter for the category."
+    }
+  ],
+  "url": "Manual documentation"
+}

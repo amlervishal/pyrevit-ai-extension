@@ -1,0 +1,22 @@
+# BuiltInParameter
+
+The BuiltInParameter enumeration represents built-in parameters in Revit elements.
+
+## Values
+- `ALL_MODEL_INSTANCE_COMMENTS`: Comments parameter for all element instances.
+- `ALL_MODEL_MARK`: Mark parameter for all elements.
+- `WALL_BASE_CONSTRAINT`: The base constraint of a wall.
+- `WALL_HEIGHT`: The height of a wall.
+- `WALL_WIDTH`: The width of a wall.
+- `ELEM_CATEGORY_PARAM`: The category of an element.
+- `ELEM_FAMILY_PARAM`: The family of an element.
+- `ELEM_TYPE_PARAM`: The type of an element.
+- `DOOR_HEIGHT`: The height of a door.
+- `DOOR_WIDTH`: The width of a door.
+- `WINDOW_HEIGHT`: The height of a window.
+- `WINDOW_WIDTH`: The width of a window.
+
+
+## Source
+
+Manually created documentation for Revit API.

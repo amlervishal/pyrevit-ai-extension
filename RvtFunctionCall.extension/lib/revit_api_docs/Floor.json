@@ -1,0 +1,37 @@
+{
+  "name": "Floor",
+  "description": "The Floor class represents a floor in a Revit project.",
+  "properties": [
+    {
+      "name": "FloorType",
+      "description": "Gets or sets the floor type."
+    },
+    {
+      "name": "Level",
+      "description": "Gets the level of the floor."
+    },
+    {
+      "name": "Thickness",
+      "description": "Gets the thickness of the floor."
+    },
+    {
+      "name": "Area",
+      "description": "Gets the area of the floor."
+    }
+  ],
+  "methods": [
+    {
+      "name": "Create(Document, CurveArray, ElementId, ElementId)",
+      "description": "Creates a new floor."
+    },
+    {
+      "name": "GetBoundary()",
+      "description": "Gets the boundary of the floor."
+    },
+    {
+      "name": "GetCompoundStructure()",
+      "description": "Gets the compound structure of the floor."
+    }
+  ],
+  "url": "Manual documentation"
+}

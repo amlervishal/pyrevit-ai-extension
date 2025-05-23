@@ -1,0 +1,17 @@
+# ElementId
+
+The ElementId class uniquely identifies elements within a document. It encapsulates an integer value.
+
+## Properties
+- `IntegerValue`: Gets the integer value of the ElementId.
+- `InvalidElementId`: A static property representing an invalid element ID.
+
+## Methods
+- `Equals(Object)`: Determines whether the specified object is equal to the current ElementId.
+- `GetHashCode()`: Serves as a hash function for ElementId.
+- `ToString()`: Returns a string representation of the ElementId.
+
+
+## Source
+
+Manually created documentation for Revit API.

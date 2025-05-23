@@ -1,0 +1,49 @@
+{
+  "name": "FamilyInstance",
+  "description": "The FamilyInstance class represents an instance of a family in a Revit project.",
+  "properties": [
+    {
+      "name": "Symbol",
+      "description": "Gets or sets the family symbol."
+    },
+    {
+      "name": "Host",
+      "description": "Gets the host element."
+    },
+    {
+      "name": "Room",
+      "description": "Gets the room that contains the instance."
+    },
+    {
+      "name": "Space",
+      "description": "Gets the space that contains the instance."
+    },
+    {
+      "name": "FacingOrientation",
+      "description": "Gets the facing orientation."
+    },
+    {
+      "name": "HandOrientation",
+      "description": "Gets the hand orientation."
+    }
+  ],
+  "methods": [
+    {
+      "name": "Create(Document, FamilySymbol, XYZ, Element, StructuralType)",
+      "description": "Creates a new family instance."
+    },
+    {
+      "name": "GetTransform()",
+      "description": "Gets the transform of the instance."
+    },
+    {
+      "name": "GetTypeId()",
+      "description": "Gets the type ID of the instance."
+    },
+    {
+      "name": "MoveWithHost(ElementId, ElementId)",
+      "description": "Moves the instance with its host."
+    }
+  ],
+  "url": "Manual documentation"
+}

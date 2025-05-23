@@ -1,0 +1,53 @@
+{
+  "name": "XYZ",
+  "description": "The XYZ class represents a point or vector in 3D space.",
+  "properties": [
+    {
+      "name": "X",
+      "description": "Gets the X-coordinate."
+    },
+    {
+      "name": "Y",
+      "description": "Gets the Y-coordinate."
+    },
+    {
+      "name": "Z",
+      "description": "Gets the Z-coordinate."
+    },
+    {
+      "name": "IsZeroLength()",
+      "description": "Gets whether the vector is of zero length."
+    },
+    {
+      "name": "IsUnitLength()",
+      "description": "Gets whether the vector is of unit length."
+    }
+  ],
+  "methods": [
+    {
+      "name": "Add(XYZ)",
+      "description": "Adds two vectors."
+    },
+    {
+      "name": "Subtract(XYZ)",
+      "description": "Subtracts a vector from this vector."
+    },
+    {
+      "name": "CrossProduct(XYZ)",
+      "description": "Computes the cross product with another vector."
+    },
+    {
+      "name": "DotProduct(XYZ)",
+      "description": "Computes the dot product with another vector."
+    },
+    {
+      "name": "Normalize()",
+      "description": "Normalizes the vector to unit length."
+    },
+    {
+      "name": "DistanceTo(XYZ)",
+      "description": "Computes the distance to another point."
+    }
+  ],
+  "url": "Manual documentation"
+}

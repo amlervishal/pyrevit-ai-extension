@@ -1,0 +1,65 @@
+{
+  "name": "View",
+  "description": "The View class represents a view in a Revit project.",
+  "properties": [
+    {
+      "name": "Name",
+      "description": "Gets or sets the name of the view."
+    },
+    {
+      "name": "Title",
+      "description": "Gets the title of the view."
+    },
+    {
+      "name": "Scale",
+      "description": "Gets or sets the scale of the view."
+    },
+    {
+      "name": "DetailLevel",
+      "description": "Gets or sets the detail level of the view."
+    },
+    {
+      "name": "DisplayStyle",
+      "description": "Gets or sets the display style of the view."
+    },
+    {
+      "name": "Document",
+      "description": "Gets the document of the view."
+    },
+    {
+      "name": "Id",
+      "description": "Gets the ElementId of the view."
+    },
+    {
+      "name": "IsTemplate",
+      "description": "Gets whether the view is a template."
+    }
+  ],
+  "methods": [
+    {
+      "name": "Duplicate(ViewDuplicateOption)",
+      "description": "Duplicates the view."
+    },
+    {
+      "name": "SetCategoryHidden(ElementId, Boolean)",
+      "description": "Sets whether a category is hidden in the view."
+    },
+    {
+      "name": "SetDetailLevel(ViewDetailLevel)",
+      "description": "Sets the detail level of the view."
+    },
+    {
+      "name": "SetScale(Integer)",
+      "description": "Sets the scale of the view."
+    },
+    {
+      "name": "GetCategoryHidden(ElementId)",
+      "description": "Gets whether a category is hidden in the view."
+    },
+    {
+      "name": "GetDependentViewIds()",
+      "description": "Gets the IDs of dependent views."
+    }
+  ],
+  "url": "Manual documentation"
+}

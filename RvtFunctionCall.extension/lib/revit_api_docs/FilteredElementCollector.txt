@@ -1,0 +1,23 @@
+# FilteredElementCollector
+
+The FilteredElementCollector class is used to query elements in a document. It provides a powerful API for filtering and selecting elements.
+
+## Properties
+- `Count`: Gets the number of elements in the collector.
+
+## Methods
+- `OfCategory(BuiltInCategory)`: Filters elements by category.
+- `OfClass(Type)`: Filters elements by class type.
+- `WhereElementIsNotElementType()`: Filters for non-element type elements.
+- `WhereElementIsElementType()`: Filters for element type elements.
+- `WherePasses(ISelectionFilter)`: Applies a custom filter.
+- `ToElements()`: Gets all elements in the collector.
+- `ToElementIds()`: Gets the IDs of all elements in the collector.
+- `FirstElement()`: Gets the first element in the collector.
+- `OfCategoryId(ElementId)`: Filters elements by category ID.
+- `OfType<T>()`: Returns elements of a specific type.
+
+
+## Source
+
+Manually created documentation for Revit API.

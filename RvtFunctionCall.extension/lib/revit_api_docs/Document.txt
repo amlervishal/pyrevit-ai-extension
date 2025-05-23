@@ -1,0 +1,27 @@
+# Document
+
+The Document class represents an open Revit project or family document. It provides access to document-level elements, settings, and parameters.
+
+## Properties
+- `ActiveView`: Gets or sets the active view of the document.
+- `Application`: Gets the Application object that represents the Revit application.
+- `PathName`: Gets the fully qualified path to the file.
+- `Title`: Gets the title of the document.
+- `IsFamilyDocument`: Indicates whether the document is a family document.
+- `IsModified`: Indicates whether the document has been modified.
+- `IsLinked`: Indicates whether the document is a linked document.
+
+## Methods
+- `Create(Application)`: Creates a new document.
+- `Close()`: Closes the document.
+- `SaveAs(String)`: Saves the document to a new file.
+- `Delete(Element)`: Removes an element from the document.
+- `GetElement(ElementId)`: Gets an element by its ID.
+- `GetElements()`: Gets all elements in the document.
+- `GetElementById(Int32)`: Gets an element by its integer ID.
+- `CreateFamilyInstance(XYZ, FamilySymbol, Level, StructuralType)`: Creates a new family instance.
+
+
+## Source
+
+Manually created documentation for Revit API.

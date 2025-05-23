@@ -1,0 +1,27 @@
+# Parameter
+
+The Parameter class represents a parameter of a Revit element. It provides access to the parameter's value and properties.
+
+## Properties
+- `Definition`: Gets the parameter definition.
+- `Element`: Gets the element that owns the parameter.
+- `Id`: Gets the parameter's ID.
+- `IsReadOnly`: Indicates whether the parameter is read-only.
+- `IsShared`: Indicates whether the parameter is a shared parameter.
+- `StorageType`: Gets the storage type of the parameter.
+
+## Methods
+- `AsDouble()`: Gets the parameter value as a double.
+- `AsInteger()`: Gets the parameter value as an integer.
+- `AsString()`: Gets the parameter value as a string.
+- `AsElementId()`: Gets the parameter value as an ElementId.
+- `Set(Double)`: Sets the parameter value as a double.
+- `Set(Integer)`: Sets the parameter value as an integer.
+- `Set(String)`: Sets the parameter value as a string.
+- `Set(ElementId)`: Sets the parameter value as an ElementId.
+- `Clear()`: Clears the parameter value.
+
+
+## Source
+
+Manually created documentation for Revit API.

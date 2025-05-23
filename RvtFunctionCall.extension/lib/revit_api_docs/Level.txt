@@ -1,0 +1,18 @@
+# Level
+
+The Level class represents a level in a Revit project.
+
+## Properties
+- `Elevation`: Gets or sets the elevation of the level.
+- `Name`: Gets or sets the name of the level.
+- `ProjectElevation`: Gets the project elevation of the level.
+
+## Methods
+- `Create(Document, Double)`: Creates a new level.
+- `get_Parameter(BuiltInParameter)`: Gets a built-in parameter of the level.
+- `GetPlaneReference()`: Gets the plane reference of the level.
+
+
+## Source
+
+Manually created documentation for Revit API.

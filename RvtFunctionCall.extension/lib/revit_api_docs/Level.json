@@ -1,0 +1,33 @@
+{
+  "name": "Level",
+  "description": "The Level class represents a level in a Revit project.",
+  "properties": [
+    {
+      "name": "Elevation",
+      "description": "Gets or sets the elevation of the level."
+    },
+    {
+      "name": "Name",
+      "description": "Gets or sets the name of the level."
+    },
+    {
+      "name": "ProjectElevation",
+      "description": "Gets the project elevation of the level."
+    }
+  ],
+  "methods": [
+    {
+      "name": "Create(Document, Double)",
+      "description": "Creates a new level."
+    },
+    {
+      "name": "get_Parameter(BuiltInParameter)",
+      "description": "Gets a built-in parameter of the level."
+    },
+    {
+      "name": "GetPlaneReference()",
+      "description": "Gets the plane reference of the level."
+    }
+  ],
+  "url": "Manual documentation"
+}
