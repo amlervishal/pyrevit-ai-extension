@@ -1,158 +1,191 @@
-# Revit Function Call AI Assistant
+# Revit AI Assistant - pyRevit Extension
 
-A pyRevit extension that provides AI-assisted Python code generation and Revit API help through function calls to Claude or Gemini.
+A powerful pyRevit extension that integrates AI assistance directly into Revit 2024+. Get instant help with the Revit API, generate Python scripts, and execute code without leaving Revit.
 
-## Features
+## ✨ Features
 
-- Ask questions about the Revit API
-- Generate Python scripts for automating Revit tasks
-- Execute generated code directly within Revit
-- Choose between Claude or Gemini AI models
-- Comprehensive Revit API documentation lookup
+- 🤖 **AI-Powered Code Generation** - Generate working Revit API scripts using Claude or Gemini
+- 📚 **Comprehensive API Documentation** - Built-in Revit API documentation lookup
+- ⚡ **Direct Code Execution** - Run generated scripts directly in Revit
+- 🔄 **Dual AI Support** - Choose between Claude 3.5 Sonnet or Gemini Pro
+- 🎯 **Smart Context Matching** - Automatically finds relevant documentation for your queries
+- 🛡️ **Safe Execution** - Automatic transaction handling and error management
 
-## Prerequisites
+## 🚀 Quick Start
 
-- Revit 2024 or newer
-- pyRevit 4.8 or newer
-- Claude API key or Gemini API key (or both)
+### Prerequisites
+- **Revit 2024 or newer**
+- **pyRevit 4.8+** ([Download here](https://github.com/eirannejad/pyRevit/releases))
+- **API Key** (Claude or Gemini)
 
-## Quick Install
+### Installation
 
-1. Download or clone this repository
-2. Install pyRevit if not already installed
-3. Add this extension to pyRevit
-4. Configure your API keys
-5. Start using the AI assistant in Revit!
+1. **Download the Extension**
+   ```bash
+   # Option 1: Direct download
+   # Download ZIP from GitHub and extract
+   
+   # Option 2: Git clone
+   git clone https://github.com/YOUR_USERNAME/rvt-function-call.git
+   ```
 
-## Detailed Installation
+2. **Install pyRevit** (if not already installed)
+   - Download from [pyRevit Releases](https://github.com/eirannejad/pyRevit/releases)
+   - Run installer as Administrator
+   - Restart Revit
 
-See [Installation Guide](#installation) below for complete steps.
+3. **Add Extension to pyRevit**
+   - Open Revit
+   - Go to **pyRevit** tab → **pyRevit** button → **Settings**
+   - In **Custom Extension Directories**, click **Add Folder**
+   - Select the folder containing `RvtFunctionCall.extension`
+   - Click **Save Settings** and reload pyRevit
 
-## Usage
-
-1. In Revit, go to the **RvtFunctionCall** tab
-2. Click on the **Assistant** button in the AI panel
-3. Enter your question or request for a Python script
-4. Select the AI model to use (Claude or Gemini)
-5. Click **Ask** to get a response
-6. If code is generated, click **Execute Code** to run it directly in Revit
-
-### Example Queries
-
-- "How do I get all walls in the current view?"
-- "Write a script to create a new level at elevation 10"
-- "Generate a script to rename all sheets with a prefix"
-- "What are the properties of the Document class?"
-- "How do I modify wall parameters?"
-
-## Installation
-
-### Step 1: Install pyRevit
-
-1. Download pyRevit from: https://github.com/eirannejad/pyRevit/releases
-2. Run the installer and follow the instructions
-3. Restart Revit to load pyRevit
-
-### Step 2: Install This Extension
-
-#### Option A: Direct Download
-1. Download this repository as a ZIP file
-2. Extract to a folder on your computer
-3. Follow Step 3 below
-
-#### Option B: Git Clone
-```bash
-git clone https://github.com/YOUR_USERNAME/rvt-function-call.git
-```
-
-### Step 3: Add Extension to pyRevit
-
-1. Open Revit
-2. Go to the **pyRevit** tab
-3. Click on the **pyRevit** button (leftmost icon)
-4. Select **Settings**
-5. In the **Custom Extension Directories** section, click **Add Folder**
-6. Browse to and select the folder containing `RvtFunctionCall.extension`
-7. Click **Save Settings** and reload pyRevit
-
-### Step 4: Configure API Keys
-
-1. Navigate to the extension folder: `RvtFunctionCall.extension/`
-2. Open `config.json` in a text editor
-3. Add your API keys:
+4. **Configure API Keys**
+   - Navigate to: `RvtFunctionCall.extension/`
+   - Copy `config_template.json` to `config.json`
+   - Edit `config.json` with your API keys:
    ```json
    {
      "default_model": "claude",
-     "claude_api_key": "your-actual-claude-api-key-here",
-     "gemini_api_key": "your-actual-gemini-api-key-here",
+     "claude_api_key": "sk-ant-api03-YOUR-ACTUAL-KEY-HERE",
+     "gemini_api_key": "AIzaSy-YOUR-ACTUAL-KEY-HERE",
      "max_docs": 5
    }
    ```
-4. Save the file
 
-### Step 5: Test the Extension
+5. **Test the Installation**
+   - Look for **RvtFunctionCall** tab in Revit
+   - Click **Assistant** button
+   - Try: "Create a simple wall script"
 
-1. Restart Revit or reload pyRevit
-2. Look for the **RvtFunctionCall** tab in Revit
-3. Click the **Assistant** button
-4. Try a test query like: "How do I get all walls in the document?"
+## 🎯 Usage Examples
 
-## API Keys
+### Basic Queries
+- "How do I get all walls in the current document?"
+- "What are the properties of the Document class?"
+- "Show me how to create a new level"
 
-### Getting a Claude API Key
-1. Go to https://console.anthropic.com/
-2. Create an account or sign in
-3. Navigate to API Keys section
-4. Create a new API key
-5. Copy the key to your config.json
+### Script Generation
+- "Write a script to create a 10-foot wall"
+- "Generate code to rename all sheets with a prefix"
+- "Create a script to export all views to PDF"
 
-### Getting a Gemini API Key
-1. Go to https://makersuite.google.com/app/apikey
-2. Create a new API key
-3. Copy the key to your config.json
+### API Help
+- "How do I use FilteredElementCollector?"
+- "What parameters does a Wall element have?"
+- "How do I start a transaction in Revit?"
 
-## Project Structure
+## 🔧 Configuration
+
+### API Keys
+
+#### Claude API Key
+1. Visit [Anthropic Console](https://console.anthropic.com/)
+2. Create account or sign in
+3. Generate API key
+4. Add to `config.json`
+
+#### Gemini API Key
+1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create API key
+3. Add to `config.json`
+
+### Settings
+- `default_model`: "claude" or "gemini"
+- `max_docs`: Number of documentation sections to include (1-10)
+
+## 🏗️ Project Structure
 
 ```
 RvtFunctionCall.extension/
-├── RvtFunctionCall.tab/             # Revit tab
-│   ├── AI.panel/                    # Panel in the tab
-│   │   ├── Assistant.pushbutton/    # Main button
-│   │   │   ├── icon.png             # Button icon
-│   │   │   ├── script.py            # Main script
-│   │   │   └── ui.xaml              # UI definition
-│   │   └── bundle.yaml              # Panel configuration
-│   └── bundle.yaml                  # Tab configuration
-├── lib/                             # Libraries directory
-│   ├── utils/                       # Utility functions
-│   │   ├── ai_client.py             # AI API client
-│   │   ├── config.py                # Configuration manager
-│   │   └── docs_lookup.py           # Documentation functions
-│   └── revit_api_docs/              # Revit API documentation
-└── config.json                      # Configuration file
+├── RvtFunctionCall.tab/           # Revit ribbon tab
+│   ├── AI.panel/                  # AI tools panel
+│   │   ├── Assistant.pushbutton/  # Main assistant button
+│   │   │   ├── script.py          # Main script
+│   │   │   └── ui.xaml            # User interface
+│   │   └── bundle.yaml            # Panel config
+│   └── bundle.yaml                # Tab config
+├── lib/                           # Core libraries
+│   ├── utils/                     # Utility modules
+│   │   ├── ai_client.py           # AI API integration
+│   │   ├── config.py              # Configuration management
+│   │   └── docs_lookup.py         # Documentation lookup
+│   └── revit_api_docs/            # API documentation
+│       ├── Document.txt           # Document class docs
+│       ├── Element.txt            # Element class docs
+│       └── [30+ other classes]    # Complete API coverage
+├── config_template.json           # Configuration template
+└── README.md                      # This file
 ```
 
-## Troubleshooting
+## 🔍 Troubleshooting
 
 ### Extension Not Appearing
-- Check that pyRevit is properly installed
-- Verify the extension folder is added to pyRevit settings
-- Try reloading pyRevit or restarting Revit
+- ✅ Verify pyRevit is installed and working
+- ✅ Check extension path in pyRevit settings
+- ✅ Reload pyRevit or restart Revit
 
 ### API Errors
-- Verify your API keys are correct in config.json
-- Check your internet connection
-- Ensure your API account has sufficient credits
+- ✅ Verify API keys are correct in `config.json`
+- ✅ Check internet connection
+- ✅ Ensure API account has sufficient credits
 
 ### Code Execution Errors
-- Make sure you have an active Revit document
-- Check that the generated code is valid Python
-- Some operations may require specific Revit contexts
+- ✅ Make sure you have an active Revit document
+- ✅ Check generated code for syntax errors
+- ✅ Review the confirmation dialog before execution
 
-## Contributing
+### "Invalid Syntax" Errors
+- ✅ Check for `**revit**` vs `__revit__` formatting
+- ✅ Manually edit code if needed before execution
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## 🛠️ Development
 
-## License
+### Adding New Documentation
+1. Add `.txt` files to `lib/revit_api_docs/`
+2. Follow the existing format with properties and methods
+3. Restart the extension
 
-This project is licensed under the MIT License.
+### Customizing AI Prompts
+- Edit prompts in `lib/utils/ai_client.py`
+- Modify the documentation lookup in `lib/utils/docs_lookup.py`
+
+## 📋 System Requirements
+
+- **Operating System**: Windows 10/11
+- **Revit Version**: 2024, 2025
+- **pyRevit Version**: 4.8 or newer
+- **Python**: 3.7+ (included with pyRevit)
+- **Internet**: Required for AI API calls
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+- **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/rvt-function-call/issues)  
+- **Discussions**: [GitHub Discussions](https://github.com/YOUR_USERNAME/rvt-function-call/discussions)
+- **Documentation**: Check the `lib/revit_api_docs/` folder for API reference
+
+## 🔄 Updates
+
+### Latest Version Features
+- ✅ Claude 3.5 Sonnet (Latest) support
+- ✅ Improved code extraction and validation
+- ✅ Better error handling and user feedback
+- ✅ Automatic transaction management
+- ✅ Code preview before execution
+
+---
+
+**Made with ❤️ for the Revit community**

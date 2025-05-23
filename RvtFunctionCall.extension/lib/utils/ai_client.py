@@ -48,7 +48,8 @@ def get_claude_response(query, docs):
         docs_context += doc['content']
         docs_context += "\n\n"
     
-    # Create prompt
+    # Create prompt with proper escaping
+    revit_var = "__revit__"  # Store in variable to avoid markdown issues
     prompt = """You are a Revit API assistant. You help users with Revit API questions and generate Python code for Revit.
 Please answer the following question or request based on the Revit API documentation provided below.
 If the query asks for a Python script, make sure to provide working code that can be run in Revit's Python environment.
@@ -60,10 +61,13 @@ REVIT API DOCUMENTATION:
 USER QUERY:
 {}
 
-If you're generating code, please wrap it in triple backticks with the language specified (```python).
-If the documentation doesn't contain enough information to answer the query accurately, please be honest about limitations.
+IMPORTANT FORMATTING RULES:
+- If you're generating code, wrap it in triple backticks with python specified
+- Use EXACTLY this format for the Revit document access: {}
+- Do NOT use asterisks (*) around the word revit
+- Use double underscores before and after revit like this: {}
 
-For code generation, always include these imports at the top:
+Standard code template to use:
 ```python
 import clr
 clr.AddReference('RevitAPI')
@@ -72,14 +76,16 @@ from Autodesk.Revit.DB import *
 from Autodesk.Revit.UI import *
 
 # Get current document
-doc = __revit__.ActiveUIDocument.Document
-uidoc = __revit__.ActiveUIDocument
+doc = {}.ActiveUIDocument.Document
+uidoc = {}.ActiveUIDocument
+
+# Your code here
 ```
-""".format(docs_context, query)
+""".format(docs_context, query, revit_var, revit_var, revit_var, revit_var)
     
     # Create request data
     request_data = {
-        "model": "claude-3-5-sonnet-20240620",
+        "model": "claude-3-5-sonnet-20241022",
         "max_tokens": 4000,
         "messages": [
             {"role": "user", "content": prompt}
@@ -111,8 +117,14 @@ uidoc = __revit__.ActiveUIDocument
         response_body = response.read().decode('utf-8')
         response_json = json.loads(response_body)
         
-        # Extract response text
-        return response_json['content'][0]['text']
+        # Extract response text and fix common markdown issues
+        response_text = response_json['content'][0]['text']
+        
+        # Fix markdown formatting issues
+        response_text = response_text.replace('**revit**', '__revit__')
+        response_text = response_text.replace('*revit*', '__revit__')
+        
+        return response_text
             
     except Exception as e:
         error_message = "Failed to get response from Claude: {}".format(str(e))
@@ -137,7 +149,8 @@ def get_gemini_response(query, docs):
         docs_context += doc['content']
         docs_context += "\n\n"
     
-    # Create prompt
+    # Create prompt with proper escaping
+    revit_var = "__revit__"
     prompt = """You are a Revit API assistant. You help users with Revit API questions and generate Python code for Revit.
 Please answer the following question or request based on the Revit API documentation provided below.
 If the query asks for a Python script, make sure to provide working code that can be run in Revit's Python environment.
@@ -149,11 +162,14 @@ REVIT API DOCUMENTATION:
 USER QUERY:
 {}
 
-If you're generating code, please wrap it in triple backticks with the language specified (```python).
-If the documentation doesn't contain enough information to answer the query accurately, please be honest about limitations.
+IMPORTANT FORMATTING RULES:
+- If you're generating code, wrap it in triple backticks with python specified
+- Use EXACTLY this format for the Revit document access: {}
+- Do NOT use asterisks (*) around the word revit
+- Use double underscores before and after revit like this: {}
 
-For code generation, always include these imports at the top:
-```python
+Standard code template to use:
+```
 import clr
 clr.AddReference('RevitAPI')
 clr.AddReference('RevitAPIUI')
@@ -161,10 +177,12 @@ from Autodesk.Revit.DB import *
 from Autodesk.Revit.UI import *
 
 # Get current document
-doc = __revit__.ActiveUIDocument.Document
-uidoc = __revit__.ActiveUIDocument
+doc = {}.ActiveUIDocument.Document
+uidoc = {}.ActiveUIDocument
+
+# Your code here
 ```
-""".format(docs_context, query)
+""".format(docs_context, query, revit_var, revit_var, revit_var, revit_var)
     
     # Create request data
     request_data = {
@@ -207,8 +225,14 @@ uidoc = __revit__.ActiveUIDocument
         response_body = response.read().decode('utf-8')
         response_json = json.loads(response_body)
         
-        # Extract response text
-        return response_json['candidates'][0]['content']['parts'][0]['text']
+        # Extract response text and fix common markdown issues
+        response_text = response_json['candidates'][0]['content']['parts'][0]['text']
+        
+        # Fix markdown formatting issues
+        response_text = response_text.replace('**revit**', '__revit__')
+        response_text = response_text.replace('*revit*', '__revit__')
+        
+        return response_text
             
     except Exception as e:
         error_message = "Failed to get response from Gemini: {}".format(str(e))
