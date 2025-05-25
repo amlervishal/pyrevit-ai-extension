@@ -475,8 +475,12 @@ Provide the corrected code and a brief summary of what was fixed.""".format(orig
                 print("Execute button error: {}".format(str(e)))
     
     def _execute_code_safely(self, code_block):
-        """Execute code with comprehensive scope setup and Python 2.7 compatibility"""
-        # First, sanitize the code for IronPython 2.7 compatibility
+        """Execute code with comprehensive scope setup and proper Revit context validation"""
+        # First, validate Revit context
+        if not self._validate_revit_context():
+            raise Exception("No active Revit document found. Please open a Revit project first.")
+        
+        # Sanitize the code for IronPython 2.7 compatibility
         code_block = self._sanitize_code_for_ironpython(code_block)
         
         # Import everything we need at module level first
@@ -494,12 +498,25 @@ Provide the corrected code and a brief summary of what was fixed.""".format(orig
         import Autodesk.Revit.DB as DB
         import Autodesk.Revit.UI as UI
         
-        # Get current document and UI document
-        doc = __revit__.ActiveUIDocument.Document
-        uidoc = __revit__.ActiveUIDocument
+        # Get current document and UI document with validation
+        try:
+            uidoc = __revit__.ActiveUIDocument
+            if not uidoc:
+                raise Exception("No active UI document found")
+            
+            doc = uidoc.Document
+            if not doc:
+                raise Exception("No active document found")
+                
+            # Additional validation
+            if doc.IsFamilyDocument:
+                # Family documents have different transaction requirements
+                pass  # We'll handle this below
+            
+        except Exception as e:
+            raise Exception("Cannot access Revit document: {}. Please ensure you have an active Revit project open.".format(str(e)))
         
         # Create comprehensive execution namespace
-        # Start with current globals to ensure all imports are available
         exec_namespace = {}
         
         # Add standard Python modules that might be needed
@@ -521,8 +538,6 @@ Provide the corrected code and a brief summary of what was fixed.""".format(orig
             '__revit__': __revit__,
             'doc': doc,
             'uidoc': uidoc,
-            
-            # Import all DB classes individually to avoid * import issues
         })
         
         # Add all Revit DB classes to namespace
@@ -564,22 +579,128 @@ Provide the corrected code and a brief summary of what was fixed.""".format(orig
             if hasattr(UI, class_name):
                 exec_namespace[class_name] = getattr(UI, class_name)
         
-        # Execute with or without transaction
-        if 'Transaction' in code_block or 'transaction' in code_block.lower():
-            # Code handles its own transactions
-            exec(code_block, exec_namespace)
-        else:
-            # Wrap in a transaction for safety
-            transaction = Transaction(doc, "AI Generated Script")
-            exec_namespace['transaction'] = transaction  # Make transaction available to code
+        # Execute with proper transaction handling
+        self._execute_with_transaction(code_block, exec_namespace, doc)
+    
+    def _validate_revit_context(self):
+        """Validate that we have a proper Revit context for transactions"""
+        try:
+            # Check if __revit__ is available
+            if '__revit__' not in globals():
+                return False
             
-            transaction.Start()
+            # Check if we have an active UI document
+            uidoc = __revit__.ActiveUIDocument
+            if not uidoc:
+                return False
+            
+            # Check if we have an active document
+            doc = uidoc.Document
+            if not doc:
+                return False
+            
+            # Check if document is valid (not null/disposed)
+            try:
+                # Try to access a basic property
+                title = doc.Title
+                return True
+            except:
+                return False
+                
+        except Exception:
+            return False
+    
+    def _execute_with_transaction(self, code_block, exec_namespace, doc):
+        """Execute code with appropriate transaction handling based on content"""
+        # Check if code already handles transactions
+        has_transaction = ('Transaction(' in code_block or 
+                          'transaction' in code_block.lower() or
+                          'TransactionGroup(' in code_block or
+                          'SubTransaction(' in code_block)
+        
+        if has_transaction:
+            # Code handles its own transactions - just execute
             try:
                 exec(code_block, exec_namespace)
-                transaction.Commit()
             except Exception as ex:
-                transaction.RollBack()
-                raise ex
+                # Re-raise with more context
+                raise Exception("Error in user transaction code: {}".format(str(ex)))
+        else:
+            # Check if code needs a transaction (modifies the model)
+            needs_transaction = self._code_needs_transaction(code_block)
+            
+            if needs_transaction:
+                # Wrap in a transaction
+                try:
+                    # Use the document's transaction manager
+                    transaction = Transaction(doc, "AI Generated Script")
+                    exec_namespace['transaction'] = transaction
+                    
+                    # Start transaction with proper error handling
+                    status = transaction.Start()
+                    if status != TransactionStatus.Started:
+                        raise Exception("Failed to start transaction. Status: {}".format(status))
+                    
+                    try:
+                        exec(code_block, exec_namespace)
+                        
+                        # Commit transaction
+                        commit_status = transaction.Commit()
+                        if commit_status != TransactionStatus.Committed:
+                            raise Exception("Failed to commit transaction. Status: {}".format(commit_status))
+                            
+                    except Exception as ex:
+                        # Rollback on any error
+                        if transaction.GetStatus() == TransactionStatus.Started:
+                            transaction.RollBack()
+                        raise Exception("Error during transaction: {}".format(str(ex)))
+                        
+                except Exception as ex:
+                    # Handle transaction creation errors
+                    if "API context" in str(ex) or "external application" in str(ex):
+                        raise Exception("Cannot create transaction - no active Revit document or invalid API context. Please ensure you have a Revit project open and try again.")
+                    else:
+                        raise ex
+            else:
+                # No transaction needed - just execute (read-only operations)
+                exec(code_block, exec_namespace)
+    
+    def _code_needs_transaction(self, code_block):
+        """Determine if code needs a transaction by analyzing its content"""
+        # Keywords that typically indicate model modification
+        modification_keywords = [
+            '.Create', '.NewWall', '.NewFloor', '.NewCeiling',
+            '.Delete', '.Move', '.Copy', '.Rotate',
+            '.SetParameterByName', '.set_Parameter',
+            'SetValueString', 'SetValueDouble', 'SetValueInteger', 'Set(',
+            'ElementTransformUtils', 'CopyElements', 'MoveElements',
+            'doc.Regenerate', 'doc.Save',
+            'NewFamilyInstance', 'PlaceComponent'
+        ]
+        
+        # Check if any modification keywords are present
+        code_lower = code_block.lower()
+        for keyword in modification_keywords:
+            if keyword.lower() in code_lower:
+                return True
+        
+        # If we're not sure, default to using a transaction for safety
+        # Exception: if code is clearly read-only (only contains collectors, gets, etc.)
+        readonly_only_keywords = [
+            'FilteredElementCollector', '.ToElements()', '.FirstElement()',
+            'get_Parameter', 'GetParameterValueByName', '.Name', '.Id',
+            'TaskDialog.Show', 'print(', 'MessageBox.Show'
+        ]
+        
+        # If code only contains read-only operations, don't use transaction
+        has_readonly_only = any(keyword.lower() in code_lower for keyword in readonly_only_keywords)
+        has_no_modifications = not any(keyword.lower() in code_lower for keyword in modification_keywords)
+        
+        if has_readonly_only and has_no_modifications:
+            return False
+        
+        # Default to using transaction for safety
+        return True
     
     def _sanitize_code_for_ironpython(self, code):
         """Convert Python 3+ syntax to IronPython 2.7 compatible syntax"""
