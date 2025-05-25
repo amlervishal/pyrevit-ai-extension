@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Documentation lookup utilities for Revit Function Call
+Documentation lookup utilities for Revit Function Call - Enhanced with Examples
 """
 import os
 import re
 from .config import load_config
+from .example_manager import ExampleManager
 
 def get_docs_path():
     """Get the path to the documentation directory"""
@@ -79,23 +80,32 @@ def read_doc_content(doc_path):
     except Exception:
         return ""
 
-def find_relevant_docs(query):
-    """Find documentation relevant to the query"""
+def find_relevant_context(query):
+    """Find comprehensive context including docs and examples"""
     keywords = extract_keywords(query)
     config = load_config()
     max_docs = config.get('max_docs', 5)
     
-    all_matching_docs = []
+    # Initialize example manager
+    examples_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'examples')
+    example_manager = ExampleManager(examples_dir)
     
-    # Find docs for each keyword
+    # Add analysis-specific keywords for better matching
+    analysis_keywords = ['area', 'room', 'space', 'analysis', 'calculate', 'quantity', 'measurement', 'statistics']
+    if any(keyword.lower() in query.lower() for keyword in analysis_keywords):
+        keywords.extend(['area', 'analysis', 'boundary', 'calculation'])
+    
+    # Find relevant examples
+    relevant_examples = example_manager.find_relevant_examples(query, max_examples=3)
+    
+    # Find API documentation
+    all_matching_docs = []
     for keyword in keywords:
         matching_docs = find_docs_for_keyword(keyword)
         all_matching_docs.extend(matching_docs)
     
-    # Remove duplicates
+    # Remove duplicates and limit
     unique_docs = list(set(all_matching_docs))
-    
-    # Limit to max_docs
     selected_docs = unique_docs[:max_docs]
     
     # Read content of selected docs
@@ -104,8 +114,34 @@ def find_relevant_docs(query):
         content = read_doc_content(doc_path)
         if content:
             docs_content.append({
+                'type': 'documentation',
                 'path': doc_path,
                 'content': content
             })
     
-    return docs_content
+    # Add example content
+    examples_content = []
+    for example_path, metadata, score in relevant_examples:
+        content = example_manager.get_example_content(example_path)
+        if content:
+            examples_content.append({
+                'type': 'example',
+                'path': example_path,
+                'content': content,
+                'metadata': metadata,
+                'relevance_score': score
+            })
+    
+    # Get common patterns
+    patterns = example_manager.get_example_patterns(query)
+    
+    return {
+        'documentation': docs_content,
+        'examples': examples_content,
+        'patterns': patterns
+    }
+
+def find_relevant_docs(query):
+    """Legacy function for backward compatibility"""
+    context = find_relevant_context(query)
+    return context['documentation']

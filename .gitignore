@@ -69,13 +69,32 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 
-# Project specific - REAL config with API keys (keep template)
+# Project specific - Configuration files with API keys
 RvtFunctionCall.extension/config.json
 *.log
-fixes/
 
-# Revit specific
+# Development and build files  
+fixes/
+scrape_revit_api_docs.py
+venv/
+
+# Documentation files (keep only main README)
+ENHANCEMENT_SUMMARY.md
+INSTALLATION.md
+RELEASE_CHECKLIST.md
+RvtFunctionCall.extension/RvtFunctionCall.tab/AI.panel/Assistant.pushbutton/README.md
+
+# Backup and temporary files
+*_backup.py
+*_old.py
+*_temp.py
+
+# Revit specific backup files
 *.rvt.bak
 *.rfa.bak
 *.rte.bak
 *.rft.bak
+
+# pyRevit cache and temporary files
+*.pyc
+*.pyo

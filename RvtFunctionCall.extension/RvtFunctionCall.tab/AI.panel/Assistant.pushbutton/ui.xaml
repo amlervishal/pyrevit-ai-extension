@@ -1,52 +1,101 @@
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Revit AI Assistant" Height="600" Width="800" ResizeMode="CanResizeWithGrip">
+        Title="Revit AI Assistant" Height="700" Width="900" ResizeMode="CanResizeWithGrip"
+        WindowStartupLocation="CenterScreen" Topmost="False">
     <Grid Margin="10">
         <Grid.RowDefinitions>
+            <!-- Top section: Model selection -->
             <RowDefinition Height="Auto"/>
+            <!-- Artifact/Code display area -->
+            <RowDefinition Height="2*"/>
+            <!-- Summary area -->
+            <RowDefinition Height="1*"/>
+            <!-- Separator -->
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <!-- Prompt input -->
+            <RowDefinition Height="Auto"/>
+            <!-- Action buttons -->
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         
         <!-- Top section: Model selection and settings -->
-        <Grid Grid.Row="0">
+        <Grid Grid.Row="0" Margin="0,0,0,10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
             <TextBlock Grid.Column="0" Text="AI Model:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-            <ComboBox Grid.Column="1" x:Name="modelComboBox" Width="120"/>
+            <ComboBox Grid.Column="1" x:Name="modelComboBox" Width="120" Margin="0,0,20,0"/>
+            
+            <!-- Status indicator -->
+            <TextBlock Grid.Column="3" x:Name="statusText" Text="Ready" VerticalAlignment="Center" 
+                      Foreground="Green" FontWeight="Bold"/>
         </Grid>
         
-        <!-- Query input -->
-        <Grid Grid.Row="1" Margin="0,10,0,10">
+        <!-- Artifact/Code display area (Claude Desktop style) -->
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <TextBlock Grid.Row="0" Text="Generated Code:" Margin="0,0,0,5" FontWeight="Bold"/>
+            <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="5">
+                <TextBox x:Name="artifactTextBox" TextWrapping="Wrap" AcceptsReturn="True" 
+                        VerticalScrollBarVisibility="Auto" IsReadOnly="True" 
+                        FontFamily="Consolas" FontSize="12" Padding="10"
+                        Background="#F8F8F8" Foreground="#333333"/>
+            </Border>
+        </Grid>
+        
+        <!-- Summary area -->
+        <Grid Grid.Row="2" Margin="0,10,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <TextBlock Grid.Row="0" Text="Summary:" Margin="0,0,0,5" FontWeight="Bold"/>
+            <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="5">
+                <TextBox x:Name="summaryTextBox" TextWrapping="Wrap" AcceptsReturn="True" 
+                        VerticalScrollBarVisibility="Auto" IsReadOnly="True" 
+                        FontFamily="Segoe UI" FontSize="11" Padding="10"
+                        Background="#FFFFFF"/>
+            </Border>
+        </Grid>
+        
+        <!-- Separator line -->
+        <Separator Grid.Row="3" Margin="0,10"/>
+        
+        <!-- Prompt input (at bottom like Claude Desktop) -->
+        <Grid Grid.Row="4" Margin="0,10,0,10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             
             <TextBlock Grid.Row="0" Text="Enter your question or request:" Margin="0,0,0,5"/>
-            <TextBox Grid.Row="1" x:Name="queryTextBox" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+            <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" CornerRadius="5">
+                <TextBox x:Name="queryTextBox" Height="80" TextWrapping="Wrap" AcceptsReturn="True"
+                        FontFamily="Segoe UI" FontSize="12" Padding="10"
+                        VerticalScrollBarVisibility="Auto"/>
+            </Border>
         </Grid>
         
-        <!-- Response area -->
-        <Grid Grid.Row="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            
-            <TextBlock Grid.Row="0" Text="Response:" Margin="0,0,0,5"/>
-            <TextBox Grid.Row="1" x:Name="responseTextBox" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsReadOnly="True" FontFamily="Consolas"/>
-        </Grid>
-        
-        <!-- Action buttons -->
-        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-            <Button x:Name="executeButton" Content="Execute Code" Width="120" Height="30" Click="execute_button_click" Margin="0,0,10,0"/>
-            <Button x:Name="askButton" Content="Ask" Width="120" Height="30" Click="ask_button_click"/>
+        <!-- Action buttons (below prompt) -->
+        <StackPanel Grid.Row="5" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
+            <Button x:Name="reviewFixButton" Content="Review &amp; Fix" Width="120" Height="35" 
+                   Click="review_fix_button_click" Margin="0,0,10,0"
+                   Background="#FF6B4B" Foreground="White" FontWeight="Bold"/>
+            <Button x:Name="executeButton" Content="Execute Code" Width="120" Height="35" 
+                   Click="execute_button_click" Margin="0,0,10,0"
+                   Background="#4CAF50" Foreground="White" FontWeight="Bold"/>
+            <Button x:Name="askButton" Content="Ask" Width="120" Height="35" 
+                   Click="ask_button_click"
+                   Background="#2196F3" Foreground="White" FontWeight="Bold"/>
         </StackPanel>
     </Grid>
 </Window>
