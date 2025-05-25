@@ -131,6 +131,8 @@ class AssistantUI(forms.WPFWindow):
     """
     
     def __init__(self):
+        global AI_FUNCTIONS_AVAILABLE, CONFIG_AVAILABLE, get_ai_response, find_relevant_context, load_config
+        
         try:
             # Load WPF form with error handling
             xaml_path = os.path.join(os.path.dirname(__file__), 'ui.xaml')
@@ -139,9 +141,16 @@ class AssistantUI(forms.WPFWindow):
                 
             forms.WPFWindow.__init__(self, xaml_path)
             
+            # Store global state in instance variables
+            self.ai_functions_available = AI_FUNCTIONS_AVAILABLE
+            self.config_available = CONFIG_AVAILABLE
+            self.get_ai_response = get_ai_response
+            self.find_relevant_context = find_relevant_context
+            self.load_config = load_config
+            
             # Load configuration with fallback
             try:
-                self.config = load_config() if load_config else {'default_model': 'claude'}
+                self.config = self.load_config() if self.load_config else {'default_model': 'claude'}
             except Exception as e:
                 print("Config loading failed, using defaults: {}".format(e))
                 self.config = {'default_model': 'claude'}
@@ -177,7 +186,7 @@ class AssistantUI(forms.WPFWindow):
             # Initialize status
             if hasattr(self, 'statusText'):
                 try:
-                    status = "Ready" if AI_FUNCTIONS_AVAILABLE else "Limited Mode - Check Configuration"
+                    status = "Ready" if self.ai_functions_available else "Limited Mode - Check Configuration"
                     self.statusText.Text = status
                 except Exception as e:
                     print("Status text setup failed: {}".format(e))
@@ -192,7 +201,7 @@ class AssistantUI(forms.WPFWindow):
             if hasattr(self, 'summaryTextBox'):
                 try:
                     summary = "Summaries will appear here."
-                    if not AI_FUNCTIONS_AVAILABLE:
+                    if not self.ai_functions_available:
                         summary += "\n\nNOTE: AI functions not available - check API keys and configuration."
                     self.summaryTextBox.Text = summary
                 except Exception as e:
@@ -215,7 +224,7 @@ class AssistantUI(forms.WPFWindow):
                 return
             
             # Check if AI functions are available
-            if not AI_FUNCTIONS_AVAILABLE:
+            if not self.ai_functions_available:
                 forms.alert("AI functions not available. Please check your configuration.", title="Configuration Error")
                 return
             
@@ -237,10 +246,10 @@ class AssistantUI(forms.WPFWindow):
             
             try:
                 # Find relevant context (docs + examples + patterns)
-                context = find_relevant_context(query) if find_relevant_context else {}
+                context = self.find_relevant_context(query) if self.find_relevant_context else {}
                 
                 # Get AI response with enhanced context
-                response = get_ai_response(query, context, model) if get_ai_response else "AI response not available"
+                response = self.get_ai_response(query, context, model) if self.get_ai_response else "AI response not available"
                 
                 # Parse and display response
                 self.parse_and_display_response(response)
@@ -323,7 +332,7 @@ class AssistantUI(forms.WPFWindow):
     def review_fix_button_click(self, sender, e):
         """Handle Review & Fix button click with error handling"""
         try:
-            if not AI_FUNCTIONS_AVAILABLE:
+            if not self.ai_functions_available:
                 forms.alert("AI functions not available for review.", title="Feature Unavailable")
                 return
                 
@@ -360,10 +369,10 @@ class AssistantUI(forms.WPFWindow):
                 review_prompt = self.create_review_prompt(original_query, current_code)
                 
                 # Find relevant context
-                context = find_relevant_context(original_query) if find_relevant_context else {}
+                context = self.find_relevant_context(original_query) if self.find_relevant_context else {}
                 
                 # Get AI response for review and fix
-                response = get_ai_response(review_prompt, context, model) if get_ai_response else "Review not available"
+                response = self.get_ai_response(review_prompt, context, model) if self.get_ai_response else "Review not available"
                 
                 # Parse and display the fixed response
                 self.parse_and_display_response(response)
