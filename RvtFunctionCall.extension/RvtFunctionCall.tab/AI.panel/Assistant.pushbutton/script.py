@@ -415,24 +415,28 @@ Provide the corrected code and a brief summary of what was fixed.""".format(orig
         """Execute generated code in Revit with comprehensive error handling"""
         try:
             if not hasattr(self, 'artifactTextBox'):
-                forms.alert("Code display not available", title="UI Error")
+                from pyrevit import forms as pyrevit_forms
+                pyrevit_forms.alert("Code display not available", title="UI Error")
                 return
                 
             code = self.artifactTextBox.Text
             
             if not code or code.strip() == "" or code == "No code generated yet. Ask a question to get started!":
-                forms.alert("No code to execute!", title="Empty Code")
+                from pyrevit import forms as pyrevit_forms
+                pyrevit_forms.alert("No code to execute!", title="Empty Code")
                 return
                 
             # Use the code directly from artifact (already extracted)
             code_block = code.strip()
             
             if not code_block:
-                forms.alert("No executable Python code found.", title="No Code Found")
+                from pyrevit import forms as pyrevit_forms
+                pyrevit_forms.alert("No executable Python code found.", title="No Code Found")
                 return
                 
             # Show the code that will be executed for confirmation
-            if not forms.alert("Execute this code?\n\n{}".format(code_block[:500] + "..." if len(code_block) > 500 else code_block), 
+            from pyrevit import forms as pyrevit_forms
+            if not pyrevit_forms.alert("Execute this code?\n\n{}".format(code_block[:500] + "..." if len(code_block) > 500 else code_block), 
                               title="Confirm Code Execution", ok=True, cancel=True):
                 return
             
@@ -473,7 +477,8 @@ Provide the corrected code and a brief summary of what was fixed.""".format(orig
                 if hasattr(self, 'summaryTextBox'):
                     self.summaryTextBox.Text = "Script executed successfully!"
                 
-                forms.alert("Script executed successfully!", title="Success")
+                from pyrevit import forms as pyrevit_forms
+                pyrevit_forms.alert("Script executed successfully!", title="Success")
                 
             except Exception as ex:
                 # Update status
@@ -482,11 +487,13 @@ Provide the corrected code and a brief summary of what was fixed.""".format(orig
                 if hasattr(self, 'summaryTextBox'):
                     self.summaryTextBox.Text = "Execution error: {}".format(str(ex))
                 
-                forms.alert("Error executing script:\n{}".format(str(ex)), title="Error Executing Script")
+                from pyrevit import forms as pyrevit_forms
+                pyrevit_forms.alert("Error executing script:\n{}".format(str(ex)), title="Error Executing Script")
                 
         except Exception as e:
             try:
-                forms.alert("Execute button error: {}".format(str(e)), title="Execution Error")
+                from pyrevit import forms as pyrevit_forms
+                pyrevit_forms.alert("Execute button error: {}".format(str(e)), title="Execution Error")
             except:
                 print("Execute button error: {}".format(str(e)))
     
