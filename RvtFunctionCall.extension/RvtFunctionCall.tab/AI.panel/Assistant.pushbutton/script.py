@@ -475,7 +475,10 @@ Provide the corrected code and a brief summary of what was fixed.""".format(orig
                 print("Execute button error: {}".format(str(e)))
     
     def _execute_code_safely(self, code_block):
-        """Execute code with comprehensive scope setup"""
+        """Execute code with comprehensive scope setup and Python 2.7 compatibility"""
+        # First, sanitize the code for IronPython 2.7 compatibility
+        code_block = self._sanitize_code_for_ironpython(code_block)
+        
         # Import everything we need at module level first
         import clr
         import System
@@ -577,6 +580,52 @@ Provide the corrected code and a brief summary of what was fixed.""".format(orig
             except Exception as ex:
                 transaction.RollBack()
                 raise ex
+    
+    def _sanitize_code_for_ironpython(self, code):
+        """Convert Python 3+ syntax to IronPython 2.7 compatible syntax"""
+        import re
+        
+        # Fix f-strings - this is the most common issue
+        # Pattern: f"text {variable}" -> "text {}".format(variable)
+        # Pattern: f'text {variable}' -> 'text {}'.format(variable)
+        
+        def fix_fstring(match):
+            quote = match.group(1)  # " or '
+            content = match.group(2)  # everything between quotes
+            
+            # Find all {variable} patterns
+            var_pattern = r'\{([^}]+)\}'
+            variables = re.findall(var_pattern, content)
+            
+            # Replace {variable} with {} and collect variables
+            fixed_content = re.sub(var_pattern, '{}', content)
+            
+            # Build the .format() call
+            if variables:
+                var_list = ', '.join(variables)
+                return '{quote}{content}{quote}.format({vars})'.format(
+                    quote=quote, content=fixed_content, vars=var_list)
+            else:
+                # No variables, just remove f prefix
+                return '{quote}{content}{quote}'.format(quote=quote, content=content)
+        
+        # Fix f"..." patterns
+        code = re.sub(r'f(["\'])([^"\']*)\1', fix_fstring, code)
+        
+        # Fix **revit** back to __revit__ (common AI mistake)
+        code = code.replace('**revit**', '__revit__')
+        code = code.replace('*revit*', '__revit__')
+        
+        # Fix other Python 3+ syntax issues
+        # Fix print statements (though most should already be function calls)
+        # Pattern: print "text" -> print("text")
+        code = re.sub(r'\bprint\s+([^\n(][^\n]*)', r'print(\1)', code)
+        
+        # Fix integer division if needed
+        # Pattern: a / b where we want integer division -> a // b
+        # This is tricky to detect automatically, so we'll skip for now
+        
+        return code
     
     def extract_code_from_response(self, response):
         """Extract Python code from AI response with error handling"""
