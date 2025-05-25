@@ -167,7 +167,7 @@ uidoc = {}.ActiveUIDocument
 
 # Your code here
 ```
-""".format(docs_context, examples_context, patterns_context, query, revit_var, revit_var, revit_var)
+""".format(docs_context, examples_context, patterns_context, query, revit_var, revit_var, revit_var, revit_var)
     
     # Create request data
     request_data = {
@@ -329,7 +329,7 @@ uidoc = {}.ActiveUIDocument
 
 # Your code here
 ```
-""".format(docs_context, examples_context, patterns_context, query, revit_var, revit_var, revit_var)
+""".format(docs_context, examples_context, patterns_context, query, revit_var, revit_var, revit_var, revit_var)
     
     # Create request data
     request_data = {
