@@ -412,7 +412,7 @@ Please:
 Provide the corrected code and a brief summary of what was fixed.""".format(original_query, current_code)
     
     def execute_button_click(self, sender, e):
-        """Execute generated code in Revit with comprehensive error handling"""
+        """Execute generated code in Revit with bulletproof scope handling"""
         try:
             if not hasattr(self, 'artifactTextBox'):
                 from pyrevit import forms as pyrevit_forms
@@ -444,32 +444,9 @@ Provide the corrected code and a brief summary of what was fixed.""".format(orig
             if hasattr(self, 'statusText'):
                 self.statusText.Text = "Executing..."
             
-            # Execute the code in Revit
+            # Execute the code in Revit with bulletproof scope
             try:
-                # Import Revit API modules for the executed code
-                clr.AddReference('RevitAPI')
-                clr.AddReference('RevitAPIUI')
-                from Autodesk.Revit.DB import *
-                from Autodesk.Revit.UI import *
-                
-                # Get current document context
-                doc = __revit__.ActiveUIDocument.Document
-                uidoc = __revit__.ActiveUIDocument
-                
-                # Create a transaction for any model changes
-                if 'Transaction' in code_block:
-                    # Code already handles transactions
-                    exec(code_block, globals(), locals())
-                else:
-                    # Wrap in a transaction for safety
-                    with Transaction(doc, "AI Generated Script") as t:
-                        t.Start()
-                        try:
-                            exec(code_block, globals(), locals())
-                            t.Commit()
-                        except:
-                            t.RollBack()
-                            raise
+                self._execute_code_safely(code_block)
                 
                 # Update status and summary
                 if hasattr(self, 'statusText'):
@@ -496,6 +473,110 @@ Provide the corrected code and a brief summary of what was fixed.""".format(orig
                 pyrevit_forms.alert("Execute button error: {}".format(str(e)), title="Execution Error")
             except:
                 print("Execute button error: {}".format(str(e)))
+    
+    def _execute_code_safely(self, code_block):
+        """Execute code with comprehensive scope setup"""
+        # Import everything we need at module level first
+        import clr
+        import System
+        from System.Collections.Generic import List
+        
+        # Add Revit references
+        clr.AddReference('RevitAPI')
+        clr.AddReference('RevitAPIUI')
+        
+        # Import all Revit classes
+        from Autodesk.Revit.DB import *
+        from Autodesk.Revit.UI import *
+        import Autodesk.Revit.DB as DB
+        import Autodesk.Revit.UI as UI
+        
+        # Get current document and UI document
+        doc = __revit__.ActiveUIDocument.Document
+        uidoc = __revit__.ActiveUIDocument
+        
+        # Create comprehensive execution namespace
+        # Start with current globals to ensure all imports are available
+        exec_namespace = {}
+        
+        # Add standard Python modules that might be needed
+        import sys, os, math, json, re
+        exec_namespace.update({
+            # Standard modules
+            'sys': sys,
+            'os': os, 
+            'math': math,
+            'json': json,
+            're': re,
+            
+            # .NET/CLR
+            'clr': clr,
+            'System': System,
+            'List': List,
+            
+            # Revit context  
+            '__revit__': __revit__,
+            'doc': doc,
+            'uidoc': uidoc,
+            
+            # Import all DB classes individually to avoid * import issues
+        })
+        
+        # Add all Revit DB classes to namespace
+        db_classes = [
+            'Transaction', 'TransactionGroup', 'SubTransaction',
+            'FilteredElementCollector', 'Element', 'ElementId', 'ElementType',
+            'Level', 'Grid', 'Wall', 'Floor', 'Ceiling', 'Door', 'Window', 'Room',
+            'FamilyInstance', 'FamilySymbol', 'Family', 'Category',
+            'Parameter', 'ParameterValueProvider', 'ParameterSet',
+            'View', 'View3D', 'ViewPlan', 'ViewSection', 'ViewSheet',
+            'Line', 'Arc', 'Circle', 'Ellipse', 'NurbSpline', 'HermiteSpline',
+            'XYZ', 'UV', 'Transform', 'Plane', 'BoundingBoxXYZ',
+            'CurveLoop', 'CurveArray', 'GeometryObject', 'Solid', 'Face', 'Edge',
+            'Material', 'MaterialElement', 'Appearance',
+            'ElementCategoryFilter', 'ElementClassFilter', 'ElementLevelFilter',
+            'ElementParameterFilter', 'LogicalAndFilter', 'LogicalOrFilter',
+            'BoundingBoxIntersectsFilter', 'BoundingBoxIsInsideFilter',
+            'BuiltInCategory', 'BuiltInParameter', 'UnitType', 'DisplayUnitType',
+            'TaskDialog', 'TaskDialogCommonButtons', 'TaskDialogResult',
+            'CopyPasteOptions', 'ElementTransformUtils',
+            'Options', 'GeometryElement', 'GeometryInstance',
+            'Reference', 'ReferenceArray', 'IntersectionResult',
+            'Units', 'UnitUtils', 'UnitSystem'
+        ]
+        
+        # Add classes that exist in the DB module
+        for class_name in db_classes:
+            if hasattr(DB, class_name):
+                exec_namespace[class_name] = getattr(DB, class_name)
+        
+        # Add all UI classes
+        ui_classes = [
+            'UIApplication', 'UIDocument', 'Selection',
+            'TaskDialog', 'TaskDialogCommonButtons', 'TaskDialogResult',
+            'MessageBox', 'DialogResult'
+        ]
+        
+        for class_name in ui_classes:
+            if hasattr(UI, class_name):
+                exec_namespace[class_name] = getattr(UI, class_name)
+        
+        # Execute with or without transaction
+        if 'Transaction' in code_block or 'transaction' in code_block.lower():
+            # Code handles its own transactions
+            exec(code_block, exec_namespace)
+        else:
+            # Wrap in a transaction for safety
+            transaction = Transaction(doc, "AI Generated Script")
+            exec_namespace['transaction'] = transaction  # Make transaction available to code
+            
+            transaction.Start()
+            try:
+                exec(code_block, exec_namespace)
+                transaction.Commit()
+            except Exception as ex:
+                transaction.RollBack()
+                raise ex
     
     def extract_code_from_response(self, response):
         """Extract Python code from AI response with error handling"""
