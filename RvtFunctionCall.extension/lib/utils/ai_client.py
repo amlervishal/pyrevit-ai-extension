@@ -22,6 +22,64 @@ except ImportError:
 
 from .config import load_config
 
+def load_syntax_reference():
+    """Load the comprehensive syntax reference JSON file"""
+    try:
+        # Get the path to the syntax reference file
+        current_dir = os.path.dirname(__file__)
+        lib_dir = os.path.dirname(current_dir)
+        syntax_file = os.path.join(lib_dir, 'revit_api_docs', 'complete_syntax_reference.json')
+        
+        if os.path.exists(syntax_file):
+            with open(syntax_file, 'r') as f:
+                data = json.load(f)
+            
+            # Format the syntax reference for inclusion in prompts
+            reference = data.get('revit_python_syntax_reference', {})
+            
+            # Create a formatted string of the most important syntax patterns
+            formatted_ref = "\n=== CRITICAL SYNTAX PATTERNS ===\n"
+            
+            # Basic setup
+            if 'basic_setup' in reference:
+                formatted_ref += "\nBASIC SETUP:\n"
+                for imp in reference['basic_setup'].get('imports', []):
+                    formatted_ref += "  {0}\n".format(imp)
+                for doc in reference['basic_setup'].get('document_access', []):
+                    formatted_ref += "  {0}\n".format(doc)
+            
+            # Transaction patterns
+            if 'transactions' in reference:
+                formatted_ref += "\nTRANSACTION PATTERNS:\n"
+                for pattern in reference['transactions'].get('basic_transaction', []):
+                    formatted_ref += "  {0}\n".format(pattern)
+            
+            # Element collection
+            if 'element_collection' in reference:
+                formatted_ref += "\nELEMENT COLLECTION:\n"
+                formatted_ref += "  {0}\n".format(reference['element_collection'].get('all_elements_by_class', ''))
+                formatted_ref += "  {0}\n".format(reference['element_collection'].get('all_elements_by_category', ''))
+            
+            # Parameter access
+            if 'parameters' in reference:
+                formatted_ref += "\nPARAMETER ACCESS:\n"
+                formatted_ref += "  Get: {0}\n".format(reference['parameters'].get('get_parameter_by_name', ''))
+                formatted_ref += "  Set: {0}\n".format(reference['parameters'].get('set_parameter_by_name', ''))
+            
+            # String formatting
+            if 'python_ironpython_compatibility' in reference:
+                formatted_ref += "\nSTRING FORMATTING (IronPython 2.7):\n"
+                for fmt in reference['python_ironpython_compatibility'].get('string_formatting', []):
+                    formatted_ref += "  {0}\n".format(fmt)
+            
+            return formatted_ref
+            
+        else:
+            return "\n=== SYNTAX REFERENCE FILE NOT FOUND ===\n"
+            
+    except Exception as e:
+        return "\n=== ERROR LOADING SYNTAX REFERENCE: {0} ===\n".format(str(e))
+
 def create_ssl_context():
     """Create SSL context with Windows compatibility"""
     try:
@@ -110,23 +168,23 @@ def get_claude_response(query, context_data):
             docs_context += doc['content']
             docs_context += "\n\n"
     
-    # Create enhanced prompt
+    # Create enhanced prompt with comprehensive syntax reference
     revit_var = "__revit__"  # Store in variable to avoid markdown issues
-    prompt = """You are an expert Revit API assistant with access to working code examples and comprehensive documentation. 
-You help users with Revit API questions and generate high-quality Python code for Revit.
+    prompt = """You are an expert Revit API assistant with access to comprehensive syntax references, working code examples, and detailed documentation.
 
-You have access to:
-1. API Documentation - Official Revit API class and method documentation
-2. Working Examples - Proven, tested code examples that demonstrate best practices
-3. Common Patterns - UI patterns, transaction handling, and coding conventions
+You MUST generate code that works in IronPython 2.7 (Revit's Python environment). Follow these critical rules:
 
-When generating code:
-- Use the working examples as templates when relevant
-- Follow the established patterns for UI, transactions, and error handling
-- Provide complete, executable code that follows best practices
-- Include proper imports, error handling, and helpful comments
+🔹 SYNTAX REQUIREMENTS:
+- Use .format() instead of f-strings: "Hello {}".format(name) ✅ NOT f"Hello {name}" ❌
+- Use __revit__ (double underscores) for Revit application access
+- Always import: clr, clr.AddReference('RevitAPI'), clr.AddReference('RevitAPIUI')
+- Use proper Transaction handling for any model modifications
+- Import System.Collections.Generic.List for element collections
 
-CONTEXT PROVIDED:
+🔹 COMPLETE SYNTAX REFERENCE:
+{}
+
+🔹 CONTEXT PROVIDED:
 
 REVIT API DOCUMENTATION:
 {}
@@ -140,34 +198,31 @@ COMMON PATTERNS:
 USER QUERY:
 {}
 
-INSTRUCTIONS:
-1. If there are relevant working examples, USE THEM as templates
-2. Adapt the examples to match the user's specific requirements
-3. Maintain the same coding style and patterns from the examples
-4. If no examples match, use the API documentation and common patterns
-5. Always provide complete, working code that can be executed in Revit
+🔹 GENERATION INSTRUCTIONS:
+1. Always start with proper imports and document access
+2. Use the syntax reference above for correct API calls
+3. If relevant working examples exist, adapt them to the user's needs
+4. Ensure IronPython 2.7 compatibility (no f-strings, proper print functions)
+5. Include proper error handling and transactions
+6. Generate complete, executable code
 
-IMPORTANT FORMATTING RULES:
-- Wrap all code in triple backticks with python specified
-- Use EXACTLY this format for Revit document access: {}
-- Do NOT use asterisks (*) around the word revit
-- Use double underscores: {}
-
-Standard code template (when not using examples):
+🔹 CODE TEMPLATE:
 ```python
 import clr
 clr.AddReference('RevitAPI')
 clr.AddReference('RevitAPIUI')
 from Autodesk.Revit.DB import *
 from Autodesk.Revit.UI import *
+from System.Collections.Generic import List
 
 # Get current document
 doc = {}.ActiveUIDocument.Document
 uidoc = {}.ActiveUIDocument
 
-# Your code here
+# Your code here with proper transactions if needed
 ```
-""".format(docs_context, examples_context, patterns_context, query, revit_var, revit_var, revit_var, revit_var)
+
+Generate working, tested-quality code that follows these patterns exactly.""".format(syntax_reference, docs_context, examples_context, patterns_context, query, revit_var, revit_var)
     
     # Create request data
     request_data = {
@@ -231,12 +286,15 @@ uidoc = {}.ActiveUIDocument
         return "ERROR: {}".format(error_message)
 
 def get_gemini_response(query, context_data):
-    """Get response from Gemini API with enhanced context"""
+    """Get response from Gemini API with enhanced context and comprehensive syntax reference"""
     config = load_config()
     api_key = config.get('gemini_api_key', '')
     
     if not api_key:
         return "ERROR: Gemini API key not set. Please update the configuration file."
+    
+    # Load comprehensive syntax reference
+    syntax_reference = load_syntax_reference()
     
     # Prepare context (same logic as Claude)
     docs_context = ""
@@ -272,23 +330,23 @@ def get_gemini_response(query, context_data):
             docs_context += doc['content']
             docs_context += "\n\n"
     
-    # Create enhanced prompt (same as Claude)
+    # Create enhanced prompt (same as Claude but adapted for Gemini)
     revit_var = "__revit__"
-    prompt = """You are an expert Revit API assistant with access to working code examples and comprehensive documentation. 
-You help users with Revit API questions and generate high-quality Python code for Revit.
+    prompt = """You are an expert Revit API assistant with access to comprehensive syntax references, working code examples, and detailed documentation.
 
-You have access to:
-1. API Documentation - Official Revit API class and method documentation
-2. Working Examples - Proven, tested code examples that demonstrate best practices
-3. Common Patterns - UI patterns, transaction handling, and coding conventions
+You MUST generate code that works in IronPython 2.7 (Revit's Python environment). Follow these critical rules:
 
-When generating code:
-- Use the working examples as templates when relevant
-- Follow the established patterns for UI, transactions, and error handling
-- Provide complete, executable code that follows best practices
-- Include proper imports, error handling, and helpful comments
+🔹 SYNTAX REQUIREMENTS:
+- Use .format() instead of f-strings: "Hello {}".format(name) ✅ NOT f"Hello {name}" ❌
+- Use __revit__ (double underscores) for Revit application access
+- Always import: clr, clr.AddReference('RevitAPI'), clr.AddReference('RevitAPIUI')
+- Use proper Transaction handling for any model modifications
+- Import System.Collections.Generic.List for element collections
 
-CONTEXT PROVIDED:
+🔹 COMPLETE SYNTAX REFERENCE:
+{}
+
+🔹 CONTEXT PROVIDED:
 
 REVIT API DOCUMENTATION:
 {}
@@ -302,34 +360,31 @@ COMMON PATTERNS:
 USER QUERY:
 {}
 
-INSTRUCTIONS:
-1. If there are relevant working examples, USE THEM as templates
-2. Adapt the examples to match the user's specific requirements
-3. Maintain the same coding style and patterns from the examples
-4. If no examples match, use the API documentation and common patterns
-5. Always provide complete, working code that can be executed in Revit
+🔹 GENERATION INSTRUCTIONS:
+1. Always start with proper imports and document access
+2. Use the syntax reference above for correct API calls
+3. If relevant working examples exist, adapt them to the user's needs
+4. Ensure IronPython 2.7 compatibility (no f-strings, proper print functions)
+5. Include proper error handling and transactions
+6. Generate complete, executable code
 
-IMPORTANT FORMATTING RULES:
-- Wrap all code in triple backticks with python specified
-- Use EXACTLY this format for Revit document access: {}
-- Do NOT use asterisks (*) around the word revit
-- Use double underscores: {}
-
-Standard code template (when not using examples):
+🔹 CODE TEMPLATE:
 ```python
 import clr
 clr.AddReference('RevitAPI')
 clr.AddReference('RevitAPIUI')
 from Autodesk.Revit.DB import *
 from Autodesk.Revit.UI import *
+from System.Collections.Generic import List
 
 # Get current document
 doc = {}.ActiveUIDocument.Document
 uidoc = {}.ActiveUIDocument
 
-# Your code here
+# Your code here with proper transactions if needed
 ```
-""".format(docs_context, examples_context, patterns_context, query, revit_var, revit_var, revit_var, revit_var)
+
+Generate working, tested-quality code that follows these patterns exactly.""".format(syntax_reference, docs_context, examples_context, patterns_context, query, revit_var, revit_var)
     
     # Create request data
     request_data = {

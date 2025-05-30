@@ -499,8 +499,22 @@ Provide the corrected code and a brief summary of what was fixed.""".format(orig
         import Autodesk.Revit.UI as UI
         
         # Get current document and UI document with validation
+        revit_app = None
         try:
-            uidoc = __revit__.ActiveUIDocument
+            # Try multiple ways to get __revit__
+            if '__revit__' in globals():
+                revit_app = globals()['__revit__']
+            elif hasattr(__builtins__, '__revit__'):
+                revit_app = getattr(__builtins__, '__revit__')
+            else:
+                # Try to get from pyrevit context
+                try:
+                    from pyrevit import HOST_APP
+                    revit_app = HOST_APP
+                except:
+                    raise Exception("Cannot find Revit application context")
+            
+            uidoc = revit_app.ActiveUIDocument
             if not uidoc:
                 raise Exception("No active UI document found")
             
@@ -535,7 +549,7 @@ Provide the corrected code and a brief summary of what was fixed.""".format(orig
             'List': List,
             
             # Revit context  
-            '__revit__': __revit__,
+            '__revit__': revit_app,
             'doc': doc,
             'uidoc': uidoc,
         })
@@ -585,29 +599,56 @@ Provide the corrected code and a brief summary of what was fixed.""".format(orig
     def _validate_revit_context(self):
         """Validate that we have a proper Revit context for transactions"""
         try:
-            # Check if __revit__ is available
-            if '__revit__' not in globals():
+            # Check if __revit__ is available in globals
+            revit_app = None
+            if '__revit__' in globals():
+                revit_app = globals()['__revit__']
+            elif hasattr(__builtins__, '__revit__'):
+                revit_app = getattr(__builtins__, '__revit__')
+            else:
+                # Try to get from pyrevit context
+                try:
+                    from pyrevit import HOST_APP
+                    revit_app = HOST_APP
+                except:
+                    pass
+            
+            if not revit_app:
+                print("DEBUG: __revit__ not found in any context")
                 return False
             
             # Check if we have an active UI document
-            uidoc = __revit__.ActiveUIDocument
-            if not uidoc:
+            try:
+                uidoc = revit_app.ActiveUIDocument
+                if not uidoc:
+                    print("DEBUG: No ActiveUIDocument")
+                    return False
+            except Exception as e:
+                print("DEBUG: Error accessing ActiveUIDocument: {}".format(e))
                 return False
             
             # Check if we have an active document
-            doc = uidoc.Document
-            if not doc:
+            try:
+                doc = uidoc.Document
+                if not doc:
+                    print("DEBUG: No Document")
+                    return False
+            except Exception as e:
+                print("DEBUG: Error accessing Document: {}".format(e))
                 return False
             
             # Check if document is valid (not null/disposed)
             try:
                 # Try to access a basic property
                 title = doc.Title
+                print("DEBUG: Document found - Title: {}".format(title))
                 return True
-            except:
+            except Exception as e:
+                print("DEBUG: Error accessing document properties: {}".format(e))
                 return False
                 
-        except Exception:
+        except Exception as e:
+            print("DEBUG: Exception in _validate_revit_context: {}".format(e))
             return False
     
     def _execute_with_transaction(self, code_block, exec_namespace, doc):
