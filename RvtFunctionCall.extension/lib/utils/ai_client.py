@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-AI client utilities for Revit Function Call - FIXED FOR REGEX ISSUES
+AI client utilities for Revit Function Call - FIXED FOR INDEX ERRORS
 """
 import sys
 import os
@@ -23,65 +23,95 @@ except ImportError:
 from .config import load_config
 
 def load_syntax_reference():
-    """Load syntax reference from your actual revit_api_docs files - SIMPLIFIED VERSION"""
+    """Load syntax reference from your actual revit_api_docs files - SAFE VERSION"""
     try:
         current_dir = os.path.dirname(__file__)
         lib_dir = os.path.dirname(current_dir)
         docs_dir = os.path.join(lib_dir, 'revit_api_docs')
         
         if not os.path.exists(docs_dir):
-            raise Exception("revit_api_docs directory not found at: {}".format(docs_dir))
+            return get_fallback_reference("Documentation directory not found")
         
         # Start with a basic reference
         syntax_content = "\n=== REVIT API DOCUMENTATION REFERENCE ===\n"
         
-        # Read files with simple content extraction (no complex regex)
+        # Read files safely
         files_to_read = [
-            ('quick_reference.py', 'QUICK REFERENCE PATTERNS'),
+            ('quick_reference.py', 'QUICK REFERENCE'),
             ('core/document.py', 'DOCUMENT OPERATIONS'),
-            ('transactions/basic_transactions.py', 'TRANSACTION PATTERNS'),
-            ('builtin_elements.py', 'BUILTIN ELEMENTS & PARAMETERS')
+            ('transactions/basic_transactions.py', 'TRANSACTIONS'),
+            ('builtin_elements.py', 'BUILTIN ELEMENTS')
         ]
         
+        files_read = 0
         for file_path, section_name in files_to_read:
             full_path = os.path.join(docs_dir, file_path)
             if os.path.exists(full_path):
-                syntax_content += "\n--- {} ---\n".format(section_name)
-                syntax_content += read_python_file_simple(full_path)
+                try:
+                    content = read_python_file_safe(full_path)
+                    if content:
+                        syntax_content += "\n--- {} ---\n".format(section_name)
+                        syntax_content += content[:1000] + "\n"  # Limit content
+                        files_read += 1
+                except Exception as e:
+                    syntax_content += "\n--- {} (Error) ---\n".format(section_name)
+                    syntax_content += "Error reading file: {}\n".format(str(e))
         
-        # Add critical IronPython compatibility notes
-        syntax_content += """\n--- IRONPYTHON 2.7 COMPATIBILITY REQUIREMENTS ---
-CRITICAL: Use .format() instead of f-strings:
-  ✅ "Hello {}".format(name)
-  ❌ f"Hello {name}" 
-  
-CRITICAL: Use __revit__ for application access:
-  doc = __revit__.ActiveUIDocument.Document
-  uidoc = __revit__.ActiveUIDocument
-  
-CRITICAL: Always wrap modifications in transactions:
-  transaction = Transaction(doc, "Description")
-  transaction.Start()
-  # modifications here
-  transaction.Commit()
+        # Add essential patterns
+        syntax_content += get_essential_patterns()
+        
+        if files_read > 0:
+            return syntax_content
+        else:
+            return get_fallback_reference("No documentation files could be read")
+        
+    except Exception as e:
+        return get_fallback_reference("Documentation loading failed: {}".format(str(e)))
 
-BASIC SETUP TEMPLATE:
+def read_python_file_safe(file_path):
+    """Safely read a Python file with error handling"""
+    try:
+        with open(file_path, 'r') as f:
+            content = f.read()
+        
+        # Return first 800 characters to keep it manageable
+        if len(content) > 800:
+            return content[:800] + "...(truncated for safety)"
+        
+        return content
+        
+    except Exception as e:
+        return "Error reading file: {}".format(str(e))
+
+def get_essential_patterns():
+    """Get essential IronPython patterns"""
+    return """\n--- ESSENTIAL IRONPYTHON PATTERNS ---
+SETUP:
 import clr
 clr.AddReference('RevitAPI')
 clr.AddReference('RevitAPIUI')
 from Autodesk.Revit.DB import *
 from Autodesk.Revit.UI import *
-from System.Collections.Generic import List
 doc = __revit__.ActiveUIDocument.Document
 uidoc = __revit__.ActiveUIDocument
+
+TRANSACTION:
+transaction = Transaction(doc, "Description")
+transaction.Start()
+# your modifications here
+transaction.Commit()
+
+STRING FORMAT:
+"Hello {}".format(name)  # Use this, NOT f-strings
+
+SELECTION:
+FilteredElementCollector(doc).OfClass(Wall).ToElements()
 """
-        
-        return syntax_content
-        
-    except Exception as e:
-        # Return a minimal reference if anything fails
-        return """\n=== BASIC REVIT API REFERENCE ===
-Failed to load full documentation: {}
+
+def get_fallback_reference(error_msg):
+    """Get minimal fallback reference when docs can't be loaded"""
+    return """\n=== MINIMAL REVIT API REFERENCE ===
+Error: {}
 
 BASIC SETUP:
 import clr
@@ -90,31 +120,20 @@ clr.AddReference('RevitAPIUI')
 from Autodesk.Revit.DB import *
 from Autodesk.Revit.UI import *
 doc = __revit__.ActiveUIDocument.Document
+uidoc = __revit__.ActiveUIDocument
 
 TRANSACTION PATTERN:
-transaction = Transaction(doc, "Description")
+transaction = Transaction(doc, "Operation")
 transaction.Start()
 # your code here
 transaction.Commit()
 
-STRING FORMATTING (IronPython):
-"Hello {}".format(name)  # Use this
-""".format(str(e))
+ELEMENT SELECTION:
+elements = FilteredElementCollector(doc).OfClass(Wall).ToElements()
 
-def read_python_file_simple(file_path):
-    """Simple file reader without complex regex patterns"""
-    try:
-        with open(file_path, 'r') as f:
-            content = f.read()
-        
-        # Extract just a reasonable sample - first 1500 characters
-        if len(content) > 1500:
-            content = content[:1500] + "\n... (content truncated for brevity)"
-        
-        return content
-        
-    except Exception as e:
-        return "Error reading {}: {}".format(file_path, str(e))
+STRING FORMATTING:
+"Value: {}".format(variable)  # IronPython 2.7 compatible
+""".format(error_msg)
 
 def create_ssl_context():
     """Create SSL context with Windows compatibility"""
@@ -159,8 +178,88 @@ def make_http_request(url, data, headers, method="POST"):
         else:
             raise e
 
+def safe_get_docs_context(context_data):
+    """Safely extract documentation context with bounds checking"""
+    docs_context = ""
+    
+    try:
+        if context_data is None:
+            return "No context data provided"
+        
+        if isinstance(context_data, dict):
+            # Handle dict format
+            if 'documentation' in context_data:
+                docs_list = context_data['documentation']
+                if isinstance(docs_list, list) and len(docs_list) > 0:
+                    # Safe iteration with bounds checking
+                    max_docs = min(len(docs_list), 3)  # Maximum 3 docs
+                    for i in range(max_docs):
+                        try:
+                            doc = docs_list[i]
+                            if isinstance(doc, dict) and 'path' in doc and 'content' in doc:
+                                path_name = doc.get('path', 'unknown')
+                                content = doc.get('content', '')
+                                
+                                # Safe basename extraction
+                                try:
+                                    basename = os.path.basename(path_name)
+                                except:
+                                    basename = str(path_name)
+                                
+                                docs_context += "\n--- {} ---\n".format(basename)
+                                
+                                # Limit content length
+                                if len(content) > 1500:
+                                    content = content[:1500] + "...(truncated)"
+                                
+                                docs_context += content + "\n"
+                        except Exception as e:
+                            docs_context += "\n--- Error processing doc {} ---\n".format(i)
+                            docs_context += "Error: {}\n".format(str(e))
+                else:
+                    docs_context = "No documentation items found in context"
+            else:
+                docs_context = "No 'documentation' key in context data"
+                
+        elif isinstance(context_data, list):
+            # Handle list format
+            if len(context_data) > 0:
+                max_docs = min(len(context_data), 3)  # Maximum 3 docs
+                for i in range(max_docs):
+                    try:
+                        doc = context_data[i]
+                        if isinstance(doc, dict) and 'path' in doc and 'content' in doc:
+                            path_name = doc.get('path', 'unknown')
+                            content = doc.get('content', '')
+                            
+                            # Safe basename extraction
+                            try:
+                                basename = os.path.basename(path_name)
+                            except:
+                                basename = str(path_name)
+                            
+                            docs_context += "\n--- {} ---\n".format(basename)
+                            
+                            # Limit content length
+                            if len(content) > 1500:
+                                content = content[:1500] + "...(truncated)"
+                            
+                            docs_context += content + "\n"
+                    except Exception as e:
+                        docs_context += "\n--- Error processing item {} ---\n".format(i)
+                        docs_context += "Error: {}\n".format(str(e))
+            else:
+                docs_context = "Empty context list provided"
+        else:
+            docs_context = "Context data format not recognized: {}".format(type(context_data))
+    
+    except Exception as e:
+        docs_context = "Error processing context: {}".format(str(e))
+    
+    return docs_context
+
 def get_claude_response(query, context_data):
-    """Get response from Claude API - SIMPLIFIED VERSION"""
+    """Get response from Claude API - SAFE VERSION WITH BOUNDS CHECKING"""
     config = load_config()
     api_key = config.get('claude_api_key', '')
     
@@ -171,30 +270,10 @@ def get_claude_response(query, context_data):
     try:
         syntax_reference = load_syntax_reference()
     except Exception as e:
-        syntax_reference = "Basic patterns available. Documentation loading error: {}".format(str(e))
+        syntax_reference = get_fallback_reference("Syntax loading failed: {}".format(str(e)))
     
-    # Simplified context handling
-    docs_context = ""
-    examples_context = ""
-    
-    try:
-        if isinstance(context_data, dict) and 'documentation' in context_data:
-            for doc in context_data['documentation'][:3]:  # Limit to 3 docs
-                docs_context += "\n--- {} ---\n".format(os.path.basename(doc['path']))
-                # Limit doc content to prevent overwhelming the prompt
-                content = doc['content']
-                if len(content) > 2000:
-                    content = content[:2000] + "...(truncated)"
-                docs_context += content + "\n"
-        elif isinstance(context_data, list):
-            for doc in context_data[:3]:  # Limit to 3 docs
-                docs_context += "\n--- {} ---\n".format(os.path.basename(doc['path']))
-                content = doc['content']
-                if len(content) > 2000:
-                    content = content[:2000] + "...(truncated)"
-                docs_context += content + "\n"
-    except Exception as e:
-        docs_context = "Context loading error: {}".format(str(e))
+    # Safely get documentation context
+    docs_context = safe_get_docs_context(context_data)
     
     # Create simplified prompt
     prompt = """You are a Revit API expert. Generate working IronPython 2.7 code for Revit.
@@ -214,7 +293,7 @@ DOCUMENTATION CONTEXT:
 USER REQUEST: {}
 
 Generate complete working code following these patterns exactly.""".format(
-        syntax_reference[:3000] if len(syntax_reference) > 3000 else syntax_reference,
+        syntax_reference[:2500] if len(syntax_reference) > 2500 else syntax_reference,
         docs_context[:2000] if len(docs_context) > 2000 else docs_context, 
         query
     )
@@ -255,7 +334,15 @@ Generate complete working code following these patterns exactly.""".format(
             response_body = response_body.decode('utf-8')
         
         response_json = json.loads(response_body)
-        response_text = response_json['content'][0]['text']
+        
+        # Safe access to response content
+        if 'content' in response_json and len(response_json['content']) > 0:
+            if 'text' in response_json['content'][0]:
+                response_text = response_json['content'][0]['text']
+            else:
+                return "ERROR: No text in response content"
+        else:
+            return "ERROR: No content in response"
         
         # Fix common markdown issues
         response_text = response_text.replace('**revit**', '__revit__')
@@ -272,38 +359,21 @@ Generate complete working code following these patterns exactly.""".format(
         return "ERROR: {}".format(error_message)
 
 def get_gemini_response(query, context_data):
-    """Get response from Gemini API - SIMPLIFIED VERSION"""
+    """Get response from Gemini API - SAFE VERSION WITH BOUNDS CHECKING"""
     config = load_config()
     api_key = config.get('gemini_api_key', '')
     
     if not api_key:
         return "ERROR: Gemini API key not set. Please update the configuration file."
     
-    # Use same simplified approach as Claude
+    # Use same safe approach as Claude
     try:
         syntax_reference = load_syntax_reference()
     except Exception as e:
-        syntax_reference = "Basic patterns available. Documentation loading error: {}".format(str(e))
+        syntax_reference = get_fallback_reference("Syntax loading failed: {}".format(str(e)))
     
-    # Simplified context (same as Claude)
-    docs_context = ""
-    try:
-        if isinstance(context_data, dict) and 'documentation' in context_data:
-            for doc in context_data['documentation'][:3]:
-                docs_context += "\n--- {} ---\n".format(os.path.basename(doc['path']))
-                content = doc['content']
-                if len(content) > 2000:
-                    content = content[:2000] + "...(truncated)"
-                docs_context += content + "\n"
-        elif isinstance(context_data, list):
-            for doc in context_data[:3]:
-                docs_context += "\n--- {} ---\n".format(os.path.basename(doc['path']))
-                content = doc['content']
-                if len(content) > 2000:
-                    content = content[:2000] + "...(truncated)"
-                docs_context += content + "\n"
-    except Exception as e:
-        docs_context = "Context loading error: {}".format(str(e))
+    # Safely get documentation context (same as Claude)
+    docs_context = safe_get_docs_context(context_data)
     
     # Create simplified prompt (same structure as Claude)
     prompt = """You are a Revit API expert. Generate working IronPython 2.7 code for Revit.
@@ -323,7 +393,7 @@ DOCUMENTATION CONTEXT:
 USER REQUEST: {}
 
 Generate complete working code following these patterns exactly.""".format(
-        syntax_reference[:3000] if len(syntax_reference) > 3000 else syntax_reference,
+        syntax_reference[:2500] if len(syntax_reference) > 2500 else syntax_reference,
         docs_context[:2000] if len(docs_context) > 2000 else docs_context,
         query
     )
@@ -369,7 +439,19 @@ Generate complete working code following these patterns exactly.""".format(
             response_body = response_body.decode('utf-8')
         
         response_json = json.loads(response_body)
-        response_text = response_json['candidates'][0]['content']['parts'][0]['text']
+        
+        # Safe access to response content
+        if 'candidates' in response_json and len(response_json['candidates']) > 0:
+            candidate = response_json['candidates'][0]
+            if 'content' in candidate and 'parts' in candidate['content'] and len(candidate['content']['parts']) > 0:
+                if 'text' in candidate['content']['parts'][0]:
+                    response_text = candidate['content']['parts'][0]['text']
+                else:
+                    return "ERROR: No text in Gemini response"
+            else:
+                return "ERROR: Invalid Gemini response structure"
+        else:
+            return "ERROR: No candidates in Gemini response"
         
         # Fix common markdown issues
         response_text = response_text.replace('**revit**', '__revit__')
@@ -386,8 +468,11 @@ Generate complete working code following these patterns exactly.""".format(
         return "ERROR: {}".format(error_message)
 
 def get_ai_response(query, context_data, model="claude"):
-    """Get response from selected AI model"""
-    if model.lower() == "claude":
-        return get_claude_response(query, context_data)
-    else:
-        return get_gemini_response(query, context_data)
+    """Get response from selected AI model - SAFE VERSION"""
+    try:
+        if model.lower() == "claude":
+            return get_claude_response(query, context_data)
+        else:
+            return get_gemini_response(query, context_data)
+    except Exception as e:
+        return "ERROR: AI response function failed: {}".format(str(e))
