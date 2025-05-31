@@ -1,9 +1,7 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
 
 # Distribution / packaging
@@ -22,15 +20,10 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
 # PyInstaller
 *.manifest
 *.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
 
 # Unit test / coverage reports
 htmlcov/
@@ -43,6 +36,12 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
 
 # Environments
 .env
@@ -60,7 +59,7 @@ venv.bak/
 *.swo
 *~
 
-# OS files
+# OS
 .DS_Store
 .DS_Store?
 ._*
@@ -69,89 +68,24 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 
-# PROJECT SPECIFIC - Configuration files with API keys
-RvtFunctionCall.extension/config.json
-RvtFunctionCall.extension/config.json.backup
+# Project specific
+archive/
+*.backup
+*.bak
+*.tmp
 *.log
 
-# DEVELOPMENT AND TEMPORARY FILES
-fixes/
+# API Keys (in case they're in separate files)
+api_keys.json
+secrets.json
+.secrets
+
+# Development files
+test_*.py
+*_test.py
+debug/
 temp/
-scrape_revit_api_docs.py
-venv/
-node_modules/
 
-# DOCUMENTATION FILES (keep only main README and LICENSE)
-ENHANCEMENT_SUMMARY.md
-INSTALLATION.md
-RELEASE_CHECKLIST.md
-DEPLOYMENT_STATUS.md
-LIBRARY_UPDATE_SUMMARY.md
-NEW_UPDATES_SUMMARY.md
-DOCUMENTATION_INTEGRATION_COMPLETE.md
-ERROR_FIX_SUMMARY.md
-RvtFunctionCall.extension/RvtFunctionCall.tab/AI.panel/Assistant.pushbutton/README.md
-
-# BACKUP FILES AND DIRECTORIES
-*_backup/
-*_backup.py
-*_old.py
-*_temp.py
-*_fixed.py
-*_part*.py
-*_ORIGINAL_BACKUP.py
-*_COMPLETE_FIXED.py
-RvtFunctionCall.extension/lib/revit_api_docs_backup/
-
-# REVIT SPECIFIC BACKUP FILES
-*.rvt.bak
-*.rfa.bak
-*.rte.bak
-*.rft.bak
-
-# PYREVIT CACHE AND TEMPORARY FILES
-*.pyc
-*.pyo
-
-# UNNECESSARY LIB CONTENT
-# Keep core lib structure but ignore unnecessary content
-RvtFunctionCall.extension/lib/examples/old/
-RvtFunctionCall.extension/lib/examples/backup/
-RvtFunctionCall.extension/lib/examples/*_test.py
-RvtFunctionCall.extension/lib/examples/*_backup.py
-RvtFunctionCall.extension/lib/utils/test_*.py
-RvtFunctionCall.extension/lib/utils/*_test.py
-
-# TEXT AND MARKDOWN FILES (selective ignore)
-*.txt
-!requirements.txt
-!LICENSE.txt
-*.md
-!README.md
-!LICENSE.md
-
-# ADDITIONAL TEMPORARY AND DEVELOPMENT FILES
-.pytest_cache/
-.coverage
-htmlcov/
-*.tmp
-*.temp
-*_test/
-test_*/
-
-# LARGE DEPENDENCIES (if any)
-downloads/
-vendor/
-external/
-
-# BUILD AND COMPILE ARTIFACTS
-*.dll
-*.exe
-*.msi
-*.deb
-*.rpm
-
-# PERSONAL CONFIG FILES
-.personal_config
-user_settings.json
-personal_notes.txt
+# Keep the lib directory and revit_api_docs
+!RvtFunctionCall.extension/lib/
+!RvtFunctionCall.extension/lib/revit_api_docs/
