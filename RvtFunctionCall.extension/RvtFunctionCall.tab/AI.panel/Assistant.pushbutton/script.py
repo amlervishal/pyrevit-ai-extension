@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Revit AI Assistant - Complete Agentic Workflow
-User query -> Agent understanding -> Database query -> Code generation -> Execution -> Error handling
 """
 import os
 import sys
@@ -10,13 +9,11 @@ from pyrevit import forms, script
 from Autodesk.Revit.DB import *
 from Autodesk.Revit.UI import *
 
-# Add lib path for utilities
 current_dir = os.path.dirname(__file__)
 extension_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
 lib_path = os.path.join(extension_dir, 'lib')
 sys.path.append(lib_path)
 
-# Import utilities
 from utils.ai_client import get_ai_response
 from utils.docs_lookup import find_relevant_context
 from utils.config import load_config
@@ -39,13 +36,11 @@ class AssistantUI(forms.WPFWindow):
         """Initialize UI elements"""
         self.Title = "Revit AI Assistant - Agentic Workflow"
         
-        # Set up model selection
         self.modelComboBox.Items.Clear()
         self.modelComboBox.Items.Add("Claude")
         self.modelComboBox.Items.Add("Gemini")
         self.modelComboBox.SelectedIndex = 0 if self.config.get('default_model') == 'claude' else 1
         
-        # Initialize text areas
         self.statusText.Text = "Ready for agentic workflow"
         self.artifactTextBox.Text = "Generated code will appear here..."
         self.summaryTextBox.Text = "Task analysis and response summary will appear here..."
@@ -57,18 +52,14 @@ class AssistantUI(forms.WPFWindow):
             forms.alert("Please enter a question.", title="Empty Query")
             return
         
-        # Store query for potential error fixing
         self.last_query = query
         self.last_error = None
         
-        # Update status
         self.statusText.Text = "Agent analyzing task..."
         
-        # STEP 1: Agent understanding and task formulation
         task_analysis = understand_and_formulate_tasks(query)
         enhanced_query = formulate_enhanced_query(query, task_analysis)
         
-        # Update summary with task analysis
         analysis_summary = """AGENT TASK ANALYSIS:
 Action: {}
 Elements: {}
@@ -89,18 +80,15 @@ Processing...""".format(
         self.summaryTextBox.Text = analysis_summary
         self.statusText.Text = "Querying documentation database..."
         
-        # STEP 2: Query documentation database
         context = find_relevant_context(query)
         self.last_context = context
         
         self.statusText.Text = "Agent generating code..."
         self.artifactTextBox.Text = "Agent is generating code based on task analysis..."
         
-        # STEP 3: Agent generates code with enhanced context
         model = "claude" if self.modelComboBox.SelectedIndex == 0 else "gemini"
         response = get_ai_response(enhanced_query, context, model)
         
-        # STEP 4: Parse and display response
         self.parse_and_display_response(response, task_analysis)
         self.statusText.Text = "Ready - Code generated"
     
@@ -108,16 +96,13 @@ Processing...""".format(
         """Extract code from response and display with task context"""
         import re
         
-        # Extract Python code blocks
         code_pattern = r'```(?:python)?\s*\n([\s\S]*?)\n```'
         matches = re.findall(code_pattern, response)
         
         if matches:
-            # Show the first code block
             code = matches[0].strip()
             self.artifactTextBox.Text = code
             
-            # Enhanced summary with task analysis and AI response
             summary_parts = [
                 "TASK COMPLETED:",
                 "Action: {}".format(task_analysis["primary_action"] or "general"),
@@ -132,7 +117,6 @@ Processing...""".format(
             
             self.summaryTextBox.Text = "\n".join(summary_parts)
         else:
-            # No code found, show full response
             self.artifactTextBox.Text = "No code block found in response"
             self.summaryTextBox.Text = "AGENT RESPONSE (No Code):\n" + response
     
@@ -144,29 +128,23 @@ Processing...""".format(
             forms.alert("No code to execute!", title="Empty Code")
             return
         
-        # Confirm execution
         if not forms.alert("Execute this code?", ok=True, cancel=True):
             return
         
-        # Update status
         self.statusText.Text = "Executing code..."
         
         try:
-            # Execute code with proper context
             self.execute_code(code)
             
-            # Success
             self.statusText.Text = "Success - Script completed"
             self.summaryTextBox.Text += "\n\n✅ EXECUTION SUCCESSFUL: Script ran without errors!"
             self.last_error = None
             forms.alert("Script executed successfully!", title="Success")
             
         except Exception as e:
-            # Capture error for fixing
             error_message = str(e)
             self.last_error = error_message
             
-            # Update UI with error
             self.statusText.Text = "Error - See summary"
             error_summary = "\n\n❌ EXECUTION ERROR:\n{}".format(error_message)
             self.summaryTextBox.Text += error_summary
@@ -184,10 +162,8 @@ Processing...""".format(
             forms.alert("No code to fix. Please generate code first.", title="No Code")
             return
         
-        # Update status
         self.statusText.Text = "Agent fixing code..."
         
-        # Create fix prompt based on whether we have an error
         if self.last_error:
             fix_prompt = """ORIGINAL TASK: {}
 
@@ -219,35 +195,28 @@ TASK: Review and improve this code. Check for:
 
 Generate improved IronPython 2.7 code.""".format(self.last_query, current_code)
         
-        # Get AI response for fix
         model = "claude" if self.modelComboBox.SelectedIndex == 0 else "gemini"
         
-        # Use stored context or get fresh context
         context = self.last_context if self.last_context else find_relevant_context(self.last_query)
         
         response = get_ai_response(fix_prompt, context, model)
         
-        # Parse and display fixed response
-        task_analysis = understand_and_formulate_tasks(self.last_query)  # Re-analyze for consistency
+        task_analysis = understand_and_formulate_tasks(self.last_query)
         self.parse_and_display_response(response, task_analysis)
         
-        # Update status and summary
         self.statusText.Text = "Code fixed - Ready to execute"
         fix_summary = "\n\n🔧 CODE FIXED: Agent has analyzed and corrected the code."
         if self.last_error:
             fix_summary += " Error addressed: {}".format(self.last_error[:100])
         self.summaryTextBox.Text += fix_summary
         
-        # Clear error since we've attempted to fix it
         self.last_error = None
     
     def execute_code(self, code):
         """Execute code in Revit context"""
-        # Get Revit context
         doc = __revit__.ActiveUIDocument.Document
         uidoc = __revit__.ActiveUIDocument
         
-        # Prepare execution namespace
         exec_globals = {
             '__revit__': __revit__,
             'doc': doc,
@@ -258,16 +227,13 @@ Generate improved IronPython 2.7 code.""".format(self.last_query, current_code)
             'TaskDialog': TaskDialog
         }
         
-        # Add all Revit DB classes
         for attr_name in dir(sys.modules[__name__]):
             attr = getattr(sys.modules[__name__], attr_name)
             if hasattr(attr, '__module__') and attr.__module__ == 'Autodesk.Revit.DB':
                 exec_globals[attr_name] = attr
         
-        # Execute code - let any errors bubble up for capture
         exec(code, exec_globals)
 
-# Main execution
 if __name__ == "__main__":
     ui = AssistantUI()
     ui.ShowDialog()

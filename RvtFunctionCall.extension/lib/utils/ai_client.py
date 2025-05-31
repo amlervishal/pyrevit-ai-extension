@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Simplified AI client for Revit Function Call with Agentic Documentation Support
+AI client for Revit Function Call with enhanced .NET import rules
 """
 import json
 import sys
 
-# Python 2/3 compatibility for pyRevit
 try:
     import urllib.request as urllib_request
     import urllib.parse as urllib_parse
@@ -15,45 +14,65 @@ except ImportError:
 
 from .config import load_config
 
+# Standard Revit API boilerplate that works reliably
+REVIT_BOILERPLATE = """import clr
+clr.AddReference('RevitAPI')
+clr.AddReference('RevitAPIUI')
+from Autodesk.Revit.DB import *
+from Autodesk.Revit.UI import *
+from System.Collections.Generic import List
+
+doc = __revit__.ActiveUIDocument.Document
+uidoc = __revit__.ActiveUIDocument"""
+
+# Critical .NET import rules to prevent common errors
+NET_IMPORT_RULES = """
+CRITICAL .NET IMPORT RULES FOR IRONPYTHON 2.7:
+- NEVER use clr.AddReference('System.Collections.Generic')
+- USE: from System.Collections.Generic import List
+- Standard assemblies: RevitAPI, RevitAPIUI only
+- Common .NET types: List, Dictionary are available via direct import
+- Transaction pattern: with Transaction(doc, 'Name') as t: t.Start(); code; t.Commit()
+- Selection: uidoc.Selection.SetElementIds(List[ElementId](ids))
+"""
+
 def get_claude_response(query, context_data):
-    """Get response from Claude API with proper documentation context"""
+    """Get response from Claude API with enhanced .NET rules"""
     config = load_config()
     api_key = config.get('claude_api_key', '')
     
     if not api_key:
         raise Exception("Claude API key not configured")
     
-    # Extract documentation context properly
     documentation_context = ""
     if context_data and isinstance(context_data, dict) and 'documentation' in context_data:
         docs = context_data['documentation']
         if docs and len(docs) > 0:
-            # Combine multiple documentation sources
             doc_sections = []
-            for doc in docs[:3]:  # Limit to first 3 docs to stay within token limits
+            for doc in docs[:3]:
                 if 'content' in doc and 'source' in doc:
                     source = doc['source']
-                    content = doc['content'][:2000]  # Limit each doc section
+                    content = doc['content'][:2000]
                     doc_sections.append("=== {} ===\n{}".format(source.upper(), content))
             
             if doc_sections:
                 documentation_context = "\n\n".join(doc_sections)
     
-    # Enhanced prompt with documentation context
     prompt = """You are an expert Revit API assistant. Generate IronPython 2.7 compatible code for pyRevit.
 
-CRITICAL REQUIREMENTS:
-- Use IronPython 2.7 syntax (no f-strings, use .format())
-- Access Revit via __revit__.ActiveUIDocument.Document
-- Use Transaction for model changes
-- Import: import clr; clr.AddReference('RevitAPI'); from Autodesk.Revit.DB import *
+{}
 
-REVIT API DOCUMENTATION REFERENCE:
+STANDARD BOILERPLATE (always include):
+{}
+
+REVIT API DOCUMENTATION:
 {}
 
 USER REQUEST: {}
 
-Generate working Revit Python code following the patterns from the documentation above.""".format(
+Generate working Revit Python code following the rules above. Use the standard boilerplate and ensure proper .NET imports.""".format(
+        NET_IMPORT_RULES,
+        REVIT_BOILERPLATE,
         documentation_context if documentation_context else "No specific documentation loaded", 
         query
     )
@@ -79,14 +98,13 @@ Generate working Revit Python code following the patterns from the documentation
     return response_data['content'][0]['text']
 
 def get_gemini_response(query, context_data):
-    """Get response from Gemini API with proper documentation context"""
+    """Get response from Gemini API with enhanced .NET rules"""
     config = load_config()
     api_key = config.get('gemini_api_key', '')
     
     if not api_key:
         raise Exception("Gemini API key not configured")
     
-    # Extract documentation context (same as Claude)
     documentation_context = ""
     if context_data and isinstance(context_data, dict) and 'documentation' in context_data:
         docs = context_data['documentation']
@@ -103,18 +121,19 @@ def get_gemini_response(query, context_data):
     
     prompt = """You are an expert Revit API assistant. Generate IronPython 2.7 compatible code for pyRevit.
 
-CRITICAL REQUIREMENTS:
-- Use IronPython 2.7 syntax (no f-strings, use .format())
-- Access Revit via __revit__.ActiveUIDocument.Document
-- Use Transaction for model changes
-- Import: import clr; clr.AddReference('RevitAPI'); from Autodesk.Revit.DB import *
+{}
 
-REVIT API DOCUMENTATION REFERENCE:
+STANDARD BOILERPLATE (always include):
+{}
+
+REVIT API DOCUMENTATION:
 {}
 
 USER REQUEST: {}
 
-Generate working Revit Python code following the patterns from the documentation above.""".format(
+Generate working Revit Python code following the rules above. Use the standard boilerplate and ensure proper .NET imports.""".format(
+        NET_IMPORT_RULES,
+        REVIT_BOILERPLATE,
         documentation_context if documentation_context else "No specific documentation loaded",
         query
     )
@@ -136,7 +155,7 @@ Generate working Revit Python code following the patterns from the documentation
     return response_data['candidates'][0]['content']['parts'][0]['text']
 
 def get_ai_response(query, context_data, model="claude"):
-    """Get response from selected AI model with documentation context"""
+    """Get response from selected AI model with enhanced .NET rules"""
     if model.lower() == "claude":
         return get_claude_response(query, context_data)
     else:

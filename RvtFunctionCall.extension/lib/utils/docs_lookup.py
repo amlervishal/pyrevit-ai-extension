@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Documentation lookup for Revit API - WITH AGENTIC DOCUMENTATION
+Documentation lookup for Revit API
 """
 import os
 
 def find_relevant_context(query):
     """Return relevant Revit API context from documentation files"""
     try:
-        # Get documentation directory
         current_dir = os.path.dirname(__file__)
         lib_dir = os.path.dirname(current_dir)
         docs_dir = os.path.join(lib_dir, 'revit_api_docs')
@@ -17,7 +16,6 @@ def find_relevant_context(query):
             "patterns": {}
         }
         
-        # Load quick reference patterns
         quick_ref_path = os.path.join(docs_dir, 'quick_reference.py')
         if os.path.exists(quick_ref_path):
             try:
@@ -30,7 +28,6 @@ def find_relevant_context(query):
             except Exception:
                 pass
         
-        # Load core patterns
         core_dir = os.path.join(docs_dir, 'core')
         if os.path.exists(core_dir):
             document_path = os.path.join(core_dir, 'document.py')
@@ -45,7 +42,6 @@ def find_relevant_context(query):
                 except Exception:
                     pass
         
-        # Load transaction patterns
         transactions_dir = os.path.join(docs_dir, 'transactions')
         if os.path.exists(transactions_dir):
             basic_trans_path = os.path.join(transactions_dir, 'basic_transactions.py')
@@ -60,7 +56,6 @@ def find_relevant_context(query):
                 except Exception:
                     pass
         
-        # Load selection patterns
         selection_dir = os.path.join(docs_dir, 'selection')
         if os.path.exists(selection_dir):
             selection_path = os.path.join(selection_dir, 'selection.py')
@@ -75,7 +70,6 @@ def find_relevant_context(query):
                 except Exception:
                     pass
         
-        # Load element creation patterns
         elements_dir = os.path.join(docs_dir, 'elements')
         if os.path.exists(elements_dir):
             creation_path = os.path.join(elements_dir, 'creation.py')
@@ -90,35 +84,27 @@ def find_relevant_context(query):
                 except Exception:
                     pass
         
-        # Add basic fallback patterns if no docs found
         if not context["documentation"]:
             context["documentation"].append({
                 "source": "fallback_patterns",
                 "content": """
-# Basic Revit API Patterns
 import clr
 clr.AddReference('RevitAPI')
 clr.AddReference('RevitAPIUI')
 from Autodesk.Revit.DB import *
 from Autodesk.Revit.UI import *
+from System.Collections.Generic import List
 
-# Document access
 doc = __revit__.ActiveUIDocument.Document
 uidoc = __revit__.ActiveUIDocument
 
-# Basic transaction
 with Transaction(doc, 'Operation') as t:
     t.Start()
-    # your code here
+    # code here
     t.Commit()
 
-# Element collection
 elements = FilteredElementCollector(doc).OfClass(Wall).ToElements()
-
-# Selection
 selection = uidoc.Selection.GetElementIds()
-
-# Parameters
 param = element.get_Parameter(BuiltInParameter.ALL_MODEL_MARK)
 """
             })
@@ -126,7 +112,6 @@ param = element.get_Parameter(BuiltInParameter.ALL_MODEL_MARK)
         return context
         
     except Exception as e:
-        # Return minimal fallback if anything fails
         return {
             "documentation": [{
                 "source": "error_fallback", 

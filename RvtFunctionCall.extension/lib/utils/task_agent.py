@@ -1,17 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Agentic Task Understanding for Revit Operations
-Analyzes user queries and formulates specific tasks
+Task understanding for Revit operations
 """
 
 def understand_and_formulate_tasks(query):
-    """
-    Analyze user query to understand intent and formulate specific tasks
-    Returns structured task information for better code generation
-    """
+    """Analyze user query to understand intent and formulate specific tasks"""
     query_lower = query.lower()
     
-    # Task analysis patterns
     task_analysis = {
         "primary_action": None,
         "target_elements": [],
@@ -22,7 +17,6 @@ def understand_and_formulate_tasks(query):
         "suggested_approach": ""
     }
     
-    # Identify primary actions
     if any(word in query_lower for word in ["create", "make", "add", "new", "generate"]):
         task_analysis["primary_action"] = "create"
         task_analysis["requires_transaction"] = True
@@ -43,8 +37,7 @@ def understand_and_formulate_tasks(query):
         
     elif any(word in query_lower for word in ["list", "show", "display", "report", "analyze"]):
         task_analysis["primary_action"] = "analyze"
-        
-    # Identify target elements
+    
     element_types = {
         "walls": ["wall", "walls"],
         "doors": ["door", "doors"], 
@@ -62,7 +55,6 @@ def understand_and_formulate_tasks(query):
         if any(keyword in query_lower for keyword in keywords):
             task_analysis["target_elements"].append(element_type)
     
-    # Identify parameters and values
     parameter_indicators = {
         "height": ["height", "tall", "elevation"],
         "width": ["width", "wide", "thickness"],
@@ -78,7 +70,6 @@ def understand_and_formulate_tasks(query):
         if any(keyword in query_lower for keyword in keywords):
             task_analysis["parameters"][param] = True
     
-    # Determine complexity
     complexity_indicators = {
         "complex": ["all", "multiple", "batch", "many", "every", "loop", "iterate"],
         "simple": ["one", "single", "this", "selected"]
@@ -89,7 +80,6 @@ def understand_and_formulate_tasks(query):
             task_analysis["complexity"] = complexity
             break
     
-    # Generate suggested approach based on analysis
     if task_analysis["primary_action"] == "create":
         if task_analysis["target_elements"]:
             task_analysis["suggested_approach"] = "Use Revit creation API with transaction for {}".format(
@@ -113,9 +103,7 @@ def understand_and_formulate_tasks(query):
     return task_analysis
 
 def formulate_enhanced_query(original_query, task_analysis):
-    """
-    Create an enhanced query for the AI agent based on task analysis
-    """
+    """Create enhanced query for AI agent based on task analysis"""
     enhanced_parts = [
         "TASK: {}".format(original_query),
         "",
